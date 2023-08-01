@@ -1,3 +1,11 @@
+import HotelCards from '../../../components/Hotel/HotelCards';
+import { useState } from 'react';
+
 export default function Hotel() {
-  return 'Hotel: Em breve!';
+  const [hotel, setHotel] = useState(null);
+  return (
+    <>
+      <HotelCards hotel={hotel} setHotel={setHotel} />
+    </>
+  );
 }
