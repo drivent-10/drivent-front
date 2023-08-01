@@ -1,7 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
-
+import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-
 import {
   FaFileContract,
   FaMoneyBill,
@@ -9,52 +7,22 @@ import {
   FaCalendarWeek,
   FaCertificate,
 } from 'react-icons/fa';
-
-import NavigationButton from './NavigationButton';
+import { DashBoardLinkButton } from './DashBoardLinkButton';
 
 export default function NavigationBar() {
   const location = useLocation();
 
-  function isActive(buttonPath) {
-    return location.pathname === buttonPath;
-  }
+  const DashBoardButtonsInfo = [
+    { text: 'Inscrição', path: '/dashboard/subscription', icon: <FaFileContract /> },
+    { text: 'Pagamento', path: '/dashboard/payment', icon: <FaMoneyBill /> },
+    { text: 'Hotel', path: '/dashboard/hotel', icon: <FaBed /> },
+    { text: 'Atividades', path: '/dashboard/activities', icon: <FaCalendarWeek /> },
+    { text: 'Certificado', path: '/dashboard/certificate', icon: <FaCertificate /> }
+  ];
 
   return (
     <Container>
-      <Link to="/dashboard/subscription">
-        <NavigationButton active={isActive('/dashboard/subscription')}>
-          <FaFileContract />
-          <span>Inscrição</span>
-        </NavigationButton>
-      </Link>
-
-      <Link to="/dashboard/payment">
-        <NavigationButton active={isActive('/dashboard/paymen')}>
-          <FaMoneyBill />
-          <span>Pagamento</span>
-        </NavigationButton>
-      </Link>
-
-      <Link to="/dashboard/hotel">
-        <NavigationButton active={isActive('/dashboard/hote')}>
-          <FaBed />
-          <span>Hotel</span>
-        </NavigationButton>
-      </Link>
-
-      <Link to="/dashboard/activities">
-        <NavigationButton active={isActive('/dashboard/activitie')}>
-          <FaCalendarWeek />
-          <span>Atividades</span>
-        </NavigationButton>
-      </Link>
-
-      <Link to="/dashboard/certificate">
-        <NavigationButton active={isActive('/dashboard/certificat')}>
-          <FaCertificate />
-          <span>Certificado</span>
-        </NavigationButton>
-      </Link>
+      {DashBoardButtonsInfo.map(button => <DashBoardLinkButton text={button.text} path={button.path} isActive={button.path === location.pathname}>{button.icon}</DashBoardLinkButton>)}
     </Container>
   );
 }
