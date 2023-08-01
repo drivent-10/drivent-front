@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-export function DashBoardLink({ text, path, isActive, children }) {
+export function DashBoardLinkButton({ text, path, isActive, children }) {
   return (
     <Link to={path}>
       <NavigationButton active={isActive}>

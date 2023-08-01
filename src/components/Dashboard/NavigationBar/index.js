@@ -7,7 +7,7 @@ import {
   FaCalendarWeek,
   FaCertificate,
 } from 'react-icons/fa';
-import { DashBoardLink } from './DashBoardLinkButton';
+import { DashBoardLinkButton } from './DashBoardLinkButton';
 
 export default function NavigationBar() {
   const location = useLocation();
@@ -22,7 +22,7 @@ export default function NavigationBar() {
 
   return (
     <Container>
-      {DashBoardButtonsInfo.map(button => <DashBoardLink text={button.text} path={button.path} isActive={button.path === location.pathname}>{button.icon}</DashBoardLink>)}
+      {DashBoardButtonsInfo.map(button => <DashBoardLinkButton text={button.text} path={button.path} isActive={button.path === location.pathname}>{button.icon}</DashBoardLinkButton>)}
     </Container>
   );
 }
