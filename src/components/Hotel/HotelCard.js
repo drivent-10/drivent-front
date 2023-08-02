@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
-export default function HotelCard({ id, name, accommodationType, availability, image, hotel, setHotel }) {
+export default function HotelCard({ id, name, accommodationType, availability, image, hotelId, setHotelId }) {
   return (
-    <Card isActive={id === hotel} onClick={() => setHotel(id)}>
+    <Card isActive={id === hotelId} onClick={() => setHotelId(id)}>
       <img src={image} alt={name} />
       <h3>{name}</h3>
       <div>
@@ -17,7 +17,7 @@ export default function HotelCard({ id, name, accommodationType, availability, i
   );
 }
 
-const Card = styled.li`
+const Card = styled.div`
   width: 196px;
   height: 264px;
   border-radius: 10px;
@@ -26,7 +26,7 @@ const Card = styled.li`
   padding: 16px 14px;
   &:hover {
     cursor: pointer;
-    box-shadow: rgba(0, 0, 0, 0.3) 0 19px 38px, rgba(0, 0, 0, 0.22) 0 15px 12px;
+    box-shadow: 0 4px 10px 5px rgba(0, 0, 0, 0.2);
   }
 
   img {
