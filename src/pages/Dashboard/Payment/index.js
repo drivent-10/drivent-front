@@ -11,8 +11,27 @@ export default function Payment() {
       <CreditCardFormContainer>
         <CreditCard numbers="1212123123123" />
       </CreditCardFormContainer>
+      <AppButton>finalizar compra</AppButton>
     </>);
 }
+function AppButton({ children }) {
+  return <StyledButton>{children}</StyledButton>;
+}
+const StyledButton = styled.button`
+padding: ${({ padding }) => padding ? padding : '10px 13px'};
+font-size:14px;
+text-align:center;
+text-transform:uppercase;
+margin-top: 50px;
+color:black;
+border: none;
+background-color:#E0E0E0;
+box-shadow: drop-shadow(0px 2px 10px black);
+border-radius:4px;
+:hover{
+  background-color:#CCC;
+}
+`;
 
 const CreditCardSectionContainer = styled.form`
   
@@ -125,8 +144,8 @@ export function InfoCard({ text, price, width, height, isSelected = false }) {
     </InfoCardContainer>);
 }
 const InfoCardContainer = styled.section`
-  width: ${({ width }) => width ? width : '290px'};
-  height: ${({ height }) => height ? height : '108px'};
+  width: 290px;
+  height: 108px;
   border-radius: 20px;
   background-color:${({ isSelected }) => (isSelected ? '#FFEED2' : 'transparent')};
   border:${({ isSelected }) => (isSelected ? '1px solid transparent' : '1px solid #CECECE')};
@@ -135,6 +154,7 @@ const InfoCardContainer = styled.section`
   align-items:center;
   justify-content:center;
   flex-wrap:wrap;
+  margin-bottom:30px;
   p:first-child {
     font-size:16px;
     color: #454545;
@@ -148,5 +168,6 @@ const InfoCardContainer = styled.section`
 const Subtitle = styled.h5`
 font-size: 20px;
 color: #8e8e8e;
+margin:17px 0;
 `;
 
