@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 
-export default function TicketType({ id, type, price, isRemote, includesHotel }) {
+export default function TicketType({ id, type, price, isRemote, includesHotel, ticketSelected, setTicketSelected, selectTicketType }) {
   return(
-    <TypeContainer>
+    <TypeContainer ticketSelected={ticketSelected} id={id} onClick={() => selectTicketType(id)}>
       <h2>{type}</h2>
       <h3>R$ {price}</h3>
 
@@ -11,6 +11,7 @@ export default function TicketType({ id, type, price, isRemote, includesHotel })
 }
 
 export const TypeContainer = styled.div`
+    background-color: ${({ ticketSelected, id }) => (ticketSelected && ticketSelected.includes(id) ? '#FFEED2' : 'transparent')};
     width: 145px;
     height: 145px;
     border: 1px solid #CECECE;

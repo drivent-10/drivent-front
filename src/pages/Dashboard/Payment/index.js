@@ -2,10 +2,21 @@ import useEnrollment from '../../../hooks/api/useEnrollment';
 import styled from 'styled-components';
 import useTicketTypes from '../../../hooks/api/useTicketTypes';
 import TicketType, { TypeContainer } from '../../../components/TicketTypes';
+import { useState } from 'react';
 
 export default function Payment() {
   const { enrollment } = useEnrollment();
   const { ticketTypes } = useTicketTypes();
+  const [ticketSelected, setTicketSelected ] = useState([]);
+  const isLoading = !ticketTypes;
+
+  function selectTicketType(typeId) {
+    if (!ticketSelected.includes(typeId)) {
+      setTicketSelected([typeId]);
+    } else {
+      setTicketSelected([]);
+    }
+  }
 
   return (!enrollment ? 
     <NoticeContainer>
@@ -15,7 +26,11 @@ export default function Payment() {
     <>
       <TicketTypesContainer>
         <h1>Primeiro, escolha sua modalidade de ingresso</h1>
-        <div>{ticketTypes.map(t => <TicketType key={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} />)}</div>
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : (
+          <div>{ticketTypes.map(t => <TicketType key={t.id} id={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} ticketSelected={ticketSelected} setTicketSelected={setTicketSelected} selectTicketType={selectTicketType}/>)}</div>
+        )}
       </TicketTypesContainer>
       <AccomodationTypesContainer>
         <h1>Ótimo! Agora escolha sua modalidade de hospedagem</h1>
