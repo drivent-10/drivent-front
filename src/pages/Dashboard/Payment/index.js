@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import useTicketTypes from '../../../hooks/api/useTicketTypes';
 import TicketType, { TypeContainer } from '../../../components/TicketTypes';
 import { useState } from 'react';
+import AccomodationType from '../../../components/AccomodationTypes';
 
 export default function Payment() {
   const { enrollment } = useEnrollment();
@@ -12,8 +13,19 @@ export default function Payment() {
   const [showAccomodation, setShowAccomodation] = useState(false);
   const [showTotalReservation, setShowTotalReservation] = useState(false);
 
-  console.log(ticketTypes);
-  console.log(ticketSelected);
+  const accomodationTypes = [
+    {
+      id: 1,
+      name: 'Sem Hotel',
+      price: 0
+    },
+    {
+      id: 2,
+      name: 'Com Hotel',
+      price: 350
+    }
+  ];
+  const [accomodationSelected, setAccomodationSelected ] = useState([]);
 
   function selectTicketType(typeId) {
     if (!ticketSelected.includes(typeId)) {
@@ -35,9 +47,25 @@ export default function Payment() {
   }
 
   function calculateTotalReservation() {
+    let total = 0;
     if(ticketTypes && ticketSelected.length !== 0) {
       const ticket = ticketTypes.filter(t => t.id === ticketSelected[0]);
-      return ticket[0].price;
+      total += ticket[0].price;
+    }
+    if(accomodationTypes && accomodationSelected.length !== 0) {
+      const accomodation = accomodationTypes.filter(a => a.id === accomodationSelected[0]);
+      total += accomodation[0].price;
+    }
+    return total;
+  }
+
+  function selectAccomodationType(typeId) {
+    if (!accomodationSelected.includes(typeId)) {
+      setAccomodationSelected([typeId]);
+      setShowTotalReservation(true);
+    } else {
+      setAccomodationSelected([]);
+      setShowTotalReservation(false);
     }
   }
 
@@ -58,14 +86,7 @@ export default function Payment() {
       <AccomodationTypesContainer showAccomodation={showAccomodation}>
         <h1>Ótimo! Agora escolha sua modalidade de hospedagem</h1>
         <div>
-          <TypeContainer>
-            <h2>Sem Hotel</h2>
-            <h3>+ R$ 0</h3>
-          </TypeContainer>
-          <TypeContainer>
-            <h2>Com Hotel</h2>
-            <h3>+ R$ 350</h3>
-          </TypeContainer>
+          {accomodationTypes.map(a => <AccomodationType key={a.id} id={a.id} type={a.name} price={a.price}  accomodationSelected={accomodationSelected} setAccomodationSelected={setAccomodationSelected} selectAccomodationType={selectAccomodationType}/>)}
         </div>
       </AccomodationTypesContainer>
       <ReservationContainer showTotalReservation={showTotalReservation}>
