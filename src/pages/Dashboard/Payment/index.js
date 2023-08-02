@@ -9,7 +9,7 @@ export default function Payment() {
       <InfoCard text="Online" price="R$ 100" isSelected width="290px" height="108px" />
       <Subtitle>Pagamento</Subtitle>
       <CreditCardFormContainer>
-        <CreditCard numbers="1212123123123" />
+        <CreditCard numbers="121212312312388" />
       </CreditCardFormContainer>
       <AppButton>finalizar compra</AppButton>
     </>);
@@ -36,20 +36,23 @@ border-radius:4px;
 const CreditCardSectionContainer = styled.form`
   
 `;
-function CreditCard({ numbers, name = 'Eduardo S Santos', date = '12' }) {
+function CreditCard({ numbers, name = 'Eduardo S Santos', date = '-' }) {
   const unknownNumbers = new Array(16).fill(<UnknownNumber />);
-  const unknownDate = new Array(5).fill(<UnknownNumber />);
+  const unknowMonth = new Array(2).fill(<UnknownNumber />);
+  const unknownYear = new Array(2).fill(<UnknownNumber />);
   const [creditCardNumber, setCreditCardNumbers] = useState(() => unknownNumbers);
   const [creditCardName, setCreditCardName] = useState('');
-  const [creditCardDate, setCreditCardDate] = useState(() => unknownDate);
+  const [creditCardDate, setCreditCardDate] = useState(() => unknowMonth / unknowMonth);
   useEffect(() => {
     const writtenNumbers = numbers.slice(0, 16);
-    const [day, year] = date.split('-');
+    const [month, year] = date.split('-');
     const unknowCardNumberRest = unknownNumbers.slice(numbers.length - 1, 16);
-    // const unknowDateRest = writtenDate.slice(date.length - 1, 4);
+    const unknowMonthRest = !month?unknowMonth:unknowMonth.slice(month.length - 1, 1);
+    const unknowYearRest = !year?unknownYear:unknownYear.slice(year.length - 1, 1);
     // new Array(5 - creditCardDate.lenght).map((item, i) => i === 2 ? (<span>/</span>) :( <UnknownNumber />))
+
     setCreditCardNumbers(prev => [...writtenNumbers, ...unknowCardNumberRest]);
-    setCreditCardDate(prev => [day, '/', year]);
+    setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', ...year, ...unknowYearRest]);
     setCreditCardName(prev => name);
   }, [numbers, name, date]);
   return (<CreditCardContainer>
@@ -63,7 +66,7 @@ function CreditCard({ numbers, name = 'Eduardo S Santos', date = '12' }) {
     <CardName>{creditCardName}</CardName>
     <CardDateTitle>valid thru</CardDateTitle>
     <CardDate>{<>
-      {/* <span>{creditCardDate} </span> */}
+      {creditCardDate}
     </>}</CardDate>
   </CreditCardContainer>);
 }
