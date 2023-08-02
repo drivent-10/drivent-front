@@ -9,12 +9,35 @@ export default function Payment() {
   const { ticketTypes } = useTicketTypes();
   const [ticketSelected, setTicketSelected ] = useState([]);
   const isLoading = !ticketTypes;
+  const [showAccomodation, setShowAccomodation] = useState(false);
+  const [showTotalReservation, setShowTotalReservation] = useState(false);
+
+  console.log(ticketTypes);
+  console.log(ticketSelected);
 
   function selectTicketType(typeId) {
     if (!ticketSelected.includes(typeId)) {
       setTicketSelected([typeId]);
+
+      const ticket = ticketTypes.filter(t => t.id === typeId);
+      if (ticket[0].name === 'Online') {
+        setShowTotalReservation(true);
+        setShowAccomodation(false);
+      } else{
+        setShowAccomodation(true);
+        setShowTotalReservation(false);
+      }
     } else {
       setTicketSelected([]);
+      setShowTotalReservation(false);
+      setShowAccomodation(false);
+    }
+  }
+
+  function calculateTotalReservation() {
+    if(ticketTypes && ticketSelected.length !== 0) {
+      const ticket = ticketTypes.filter(t => t.id === ticketSelected[0]);
+      return ticket[0].price;
     }
   }
 
@@ -32,7 +55,7 @@ export default function Payment() {
           <div>{ticketTypes.map(t => <TicketType key={t.id} id={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} ticketSelected={ticketSelected} setTicketSelected={setTicketSelected} selectTicketType={selectTicketType}/>)}</div>
         )}
       </TicketTypesContainer>
-      <AccomodationTypesContainer>
+      <AccomodationTypesContainer showAccomodation={showAccomodation}>
         <h1>Ótimo! Agora escolha sua modalidade de hospedagem</h1>
         <div>
           <TypeContainer>
@@ -45,8 +68,8 @@ export default function Payment() {
           </TypeContainer>
         </div>
       </AccomodationTypesContainer>
-      <ReservationContainer>
-        <h1>Fechado! O total ficou em <strong>R$ 600</strong>. Agora é só confirmar:</h1>
+      <ReservationContainer showTotalReservation={showTotalReservation}>
+        <h1>Fechado! O total ficou em <strong>R$ {ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''}</strong>. Agora é só confirmar:</h1>
         <button>RESERVAR INGRESSO</button>
       </ReservationContainer>
     </>
@@ -81,9 +104,11 @@ const TicketTypesContainer = styled.div`
 `;
 
 const AccomodationTypesContainer = styled(TicketTypesContainer)`
+display: ${({ showAccomodation }) => !showAccomodation && 'none'};
 `;
 
 const ReservationContainer = styled.div`
+display: ${({ showTotalReservation }) => !showTotalReservation && 'none'};
 font-weight: 400;
   h1 {
     font-size: 20px;
