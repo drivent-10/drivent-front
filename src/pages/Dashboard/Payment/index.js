@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import chipUrl from '../../../assets/images/chip.svg';
 import check from '../../../assets/images/check.jpg';
 import Input from '../../../components/Form/Input';
+import { toast } from 'react-toastify';
+import useSaveTicket from '../../../hooks/api/useSaveTicket';
 export default function Payment() {
   const [date, setDate] = useState('');
   const [cvc, setCvc] = useState('');
@@ -21,6 +23,7 @@ export default function Payment() {
   const [showTicketContainer, setShowTicketContainer] = useState(true);
   const [showPaymentContainer, setShowPaymentContainer] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
+  const { saveTicketLoading, saveTicket } = useSaveTicket();
 
   const accomodationTypes = [
     {
@@ -78,10 +81,19 @@ export default function Payment() {
     }
   }
 
-  function bookTicket() {
-    setShowTicketContainer(false);
-    setShowPaymentContainer(true);
+  async function bookTicket(ticketTypeId) {
+    const obj = { ticketTypeId };
+   
+    try {
+      await saveTicket(obj);
+      toast('Ingresso reservado com sucesso!');
+      setShowTicketContainer(false);
+      setShowPaymentContainer(true);
+    } catch (err) {
+      toast('Não foi possível reservar o ingresso!');
+    }
   }
+
   return (!enrollment ?
     <NoticeContainer>
       Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso
@@ -105,7 +117,7 @@ export default function Payment() {
         </AccomodationTypesContainer>
         <ReservationContainer showTotalReservation={showTotalReservation}>
           <h1>Fechado! O total ficou em <strong>R$ {ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''}</strong>. Agora é só confirmar:</h1>
-          <button onClick={bookTicket}>RESERVAR INGRESSO</button>
+          <button onClick={() => bookTicket(ticketSelected[0])}>RESERVAR INGRESSO</button>
         </ReservationContainer>
       </TicketContainer>
       <PaymentContainer showPaymentContainer={showPaymentContainer}>
@@ -113,7 +125,7 @@ export default function Payment() {
         <InfoCard text={ticketTypes && ticketSelected.length !== 0 ? (ticketTypes.filter(t => t.id === ticketSelected[0]))[0].name : ''} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''} isSelected width="290px" height="108px" />
         <Subtitle>Pagamento</Subtitle>
 
-         {!isPaid ? <CreditCardFormContainer>
+        {!isPaid ? <CreditCardFormContainer>
           <CreditCard numbers={creditCardNumber.replace(/\s/g, '')} name={name} date={date} />
           <CreditCardSectionContainer>
             <Input label="Card Number" mask='9999 9999 9999 9999' value={creditCardNumber} onChange={e => setCreditCardNumber(e.target.value)} />
