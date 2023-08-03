@@ -6,6 +6,7 @@ import AccomodationType from '../../../components/AccomodationTypes';
 import { Title } from '../../../components/Title';
 import { useEffect, useState } from 'react';
 import chipUrl from '../../../assets/images/chip.svg';
+import check from '../../../assets/images/check.jpg';
 export default function Payment() {
   const { enrollment } = useEnrollment();
   const { ticketTypes } = useTicketTypes();
@@ -15,6 +16,7 @@ export default function Payment() {
   const [showTotalReservation, setShowTotalReservation] = useState(false);
   const [showTicketContainer, setShowTicketContainer] = useState(true);
   const [showPaymentContainer, setShowPaymentContainer] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
 
   const accomodationTypes = [
     {
@@ -107,15 +109,45 @@ export default function Payment() {
         <Subtitle>Ingresso Escolhido</Subtitle>
         <InfoCard text={ticketTypes && ticketSelected.length !== 0 ? (ticketTypes.filter(t => t.id === ticketSelected[0]))[0].name : ''} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''} isSelected width="290px" height="108px" />
         <Subtitle>Pagamento</Subtitle>
-        <CreditCardFormContainer>
+        {!isPaid ? <CreditCardFormContainer>
           <CreditCard numbers="121212312312388" />
-        </CreditCardFormContainer>
+        </CreditCardFormContainer> :
+          <PaymentConfirmationContainer>
+            <img src={check} alt="confirmed!!" />
+            <div>
+              <p>Pagamento confirmado!</p>
+              <p>Prossiga para escolha de hospedagem e atividades</p>
+            </div>
+          </PaymentConfirmationContainer>}
         <AppButton>finalizar compra</AppButton>
       </PaymentContainer>
     </>
   );
 }
-
+const PaymentConfirmationContainer = styled.div`
+display:flex;
+align-items:center;
+img{
+  display:block;
+  width:40px;
+  height:40px;
+}
+div {
+  display:flex;
+  flex-direction:column;
+  align-items:start;
+  margin-left:14px;
+  p:first-child{
+    font-weight:700;
+  }
+  p{
+    color: #454545;
+    font-weight:400;
+    font-size:16px;
+    line-height:18.75px;
+  }
+}
+`;
 const PaymentContainer = styled.div`
 display: ${({ showPaymentContainer }) => !showPaymentContainer && 'none'};
 `;
