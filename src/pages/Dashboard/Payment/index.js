@@ -6,7 +6,13 @@ import AccomodationType from '../../../components/AccomodationTypes';
 import { Title } from '../../../components/Title';
 import { useEffect, useState } from 'react';
 import chipUrl from '../../../assets/images/chip.svg';
+import Input from '../../../components/Form/Input';
+
 export default function Payment() {
+  const [date, setDate] = useState(''); 
+  const [cvc, setCvc] = useState('');
+  const [creditCardNumber, setCreditCardNumber] = useState('');
+  const [name, setName] = useState('');
   const { enrollment } = useEnrollment();
   const { ticketTypes } = useTicketTypes();
   const [ticketSelected, setTicketSelected ] = useState([]);
@@ -15,7 +21,6 @@ export default function Payment() {
   const [showTotalReservation, setShowTotalReservation] = useState(false);
   const [showTicketContainer, setShowTicketContainer] = useState(true);
   const [showPaymentContainer, setShowPaymentContainer] = useState(false);
-
   const accomodationTypes = [
     {
       id: 1,
@@ -76,14 +81,13 @@ export default function Payment() {
     setShowTicketContainer(false);
     setShowPaymentContainer(true);
   }
-
   return (!enrollment ? 
     <NoticeContainer>
       Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso 
     </NoticeContainer>
     : 
     <>
-      <TicketContainer showTicketContainer={showTicketContainer}>
+    <TicketContainer showTicketContainer={showTicketContainer}>
         <TicketTypesContainer>
           <h1>Primeiro, escolha sua modalidade de ingresso</h1>
           {isLoading ? (
@@ -104,16 +108,24 @@ export default function Payment() {
         </ReservationContainer>
       </TicketContainer>
       <PaymentContainer showPaymentContainer={showPaymentContainer}>
-        <Subtitle>Ingresso Escolhido</Subtitle>
-        <InfoCard text={ticketTypes && ticketSelected.length !== 0 ? (ticketTypes.filter(t => t.id === ticketSelected[0]))[0].name : ''} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''} isSelected width="290px" height="108px" />
-        <Subtitle>Pagamento</Subtitle>
-        <CreditCardFormContainer>
-          <CreditCard numbers="121212312312388" />
+      <Subtitle>Ingresso Escolhido</Subtitle>
+      <InfoCard text={ticketTypes && ticketSelected.length !== 0 ? (ticketTypes.filter(t => t.id === ticketSelected[0]))[0].name : ''} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''} isSelected width="290px" height="108px" />
+      <Subtitle>Pagamento</Subtitle>
+      <CreditCardFormContainer>
+        <CreditCard numbers={creditCardNumber.replace(/\s/g, '')} name={name} date={date} />
+        <CreditCardSectionContainer>
+          <Input label="Card Number" mask='9999 9999 9999 9999' value={ creditCardNumber } onChange={ e => setCreditCardNumber( e.target.value ) }/>
+          <p>E.g.: 49..., 51..., 36..., 37...</p>
+          <Input label="Name" value={ name } onChange={ e => setName( e.target.value ) }/>
+          <div>
+            <InputValidThru label="Valid Thru" mask='99/99' value={ date } onChange={ e => setDate( e.target.value ) }/>
+            <InputCvc label="CVC" mask='999' value={ cvc } onChange={ e => setCvc( e.target.value ) }/>
+          </div>
+        </CreditCardSectionContainer>
         </CreditCardFormContainer>
-        <AppButton>finalizar compra</AppButton>
+      <AppButton>finalizar compra</AppButton>
       </PaymentContainer>
-    </>
-  );
+    </>);
 }
 
 const PaymentContainer = styled.div`
@@ -144,26 +156,53 @@ border-radius:4px;
 `;
 
 const CreditCardSectionContainer = styled.form`
-  
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  label{
+    top: -5px !important;
+  }
+  label:focus{
+      top:5px !important;
+    }
+  div{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  input{
+    height: 5px;
+  }
+  p{
+    margin-top: 5px;
+    color:#c9c9c9;
+  }
 `;
-function CreditCard({ numbers, name = 'Eduardo S Santos', date = '-' }) {
+
+const InputValidThru = styled(Input)`
+  width: 180px !important;
+`;
+
+const InputCvc = styled(Input)`
+  width: 100px !important;
+`;
+function CreditCard({ numbers, name = 'Eduardo S Santos', date }) {
   const unknownNumbers = new Array(16).fill(<UnknownNumber />);
   const unknowMonth = new Array(2).fill(<UnknownNumber />);
   const unknownYear = new Array(2).fill(<UnknownNumber />);
   const [creditCardNumber, setCreditCardNumbers] = useState(() => unknownNumbers);
   const [creditCardName, setCreditCardName] = useState('');
-  const [creditCardDate, setCreditCardDate] = useState(() => unknowMonth / unknowMonth);
+  const [creditCardDate, setCreditCardDate] = useState(() => unknowMonth, unknowMonth);
   useEffect(() => {
     const writtenNumbers = numbers.slice(0, 16);
-    const [month, year] = date.split('-');
-    const unknowCardNumberRest = unknownNumbers.slice(numbers.length - 1, 16);
+    const [month, year] = date.split('/');
+    const unknowCardNumberRest = numbers.length===0?unknownNumbers:unknownNumbers.slice(numbers.length - 1, 16);
     const unknowMonthRest = !month?unknowMonth:unknowMonth.slice(month.length - 1, 1);
     const unknowYearRest = !year?unknownYear:unknownYear.slice(year.length - 1, 1);
-    // new Array(5 - creditCardDate.lenght).map((item, i) => i === 2 ? (<span>/</span>) :( <UnknownNumber />))
 
     setCreditCardNumbers(prev => [...writtenNumbers, ...unknowCardNumberRest]);
-    setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', ...year, ...unknowYearRest]);
-    setCreditCardName(prev => name);
+    setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', year, ...unknowYearRest]);
+    setCreditCardName(prev => name.length===0?'YOUR NAME HERE':name.toUpperCase());
   }, [numbers, name, date]);
   return (<CreditCardContainer>
     <Chip src={chipUrl} alt="chip" />
@@ -287,6 +326,7 @@ height:170px;
 background-color: rgb(146,146,146);
 border-radius:20px;
 position:relative;
+margin-right: 30px;
 `;
 const CreditCardNumbersContainer = styled.p`
 color: white;
@@ -302,7 +342,7 @@ span {
 }
 `;
 const CreditCardFormContainer = styled.form`
-
+  display: flex;
 `;
 
 export function InfoCard({ text, price, width, height, isSelected = false }) {
