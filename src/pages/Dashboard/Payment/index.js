@@ -3,14 +3,18 @@ import styled from 'styled-components';
 import useTicketTypes from '../../../hooks/api/useTicketTypes';
 import TicketType, { TypeContainer } from '../../../components/TicketTypes';
 import AccomodationType from '../../../components/AccomodationTypes';
-import { Title } from '../../../components/Title';
 import { useEffect, useState } from 'react';
 import chipUrl from '../../../assets/images/chip.svg';
 import check from '../../../assets/images/check.jpg';
+import Input from '../../../components/Form/Input';
 export default function Payment() {
+  const [date, setDate] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [creditCardNumber, setCreditCardNumber] = useState('');
+  const [name, setName] = useState('');
   const { enrollment } = useEnrollment();
   const { ticketTypes } = useTicketTypes();
-  const [ticketSelected, setTicketSelected ] = useState([]);
+  const [ticketSelected, setTicketSelected] = useState([]);
   const isLoading = !ticketTypes;
   const [showAccomodation, setShowAccomodation] = useState(false);
   const [showTotalReservation, setShowTotalReservation] = useState(false);
@@ -30,7 +34,7 @@ export default function Payment() {
       price: 350
     }
   ];
-  const [accomodationSelected, setAccomodationSelected ] = useState([]);
+  const [accomodationSelected, setAccomodationSelected] = useState([]);
 
   function selectTicketType(typeId) {
     if (!ticketSelected.includes(typeId)) {
@@ -40,7 +44,7 @@ export default function Payment() {
       if (ticket[0].name === 'Online') {
         setShowTotalReservation(true);
         setShowAccomodation(false);
-      } else{
+      } else {
         setShowAccomodation(true);
         setShowTotalReservation(false);
       }
@@ -53,11 +57,11 @@ export default function Payment() {
 
   function calculateTotalReservation() {
     let total = 0;
-    if(ticketTypes && ticketSelected.length !== 0) {
+    if (ticketTypes && ticketSelected.length !== 0) {
       const ticket = ticketTypes.filter(t => t.id === ticketSelected[0]);
       total += ticket[0].price;
     }
-    if(accomodationTypes && accomodationSelected.length !== 0) {
+    if (accomodationTypes && accomodationSelected.length !== 0) {
       const accomodation = accomodationTypes.filter(a => a.id === accomodationSelected[0]);
       total += accomodation[0].price;
     }
@@ -78,12 +82,11 @@ export default function Payment() {
     setShowTicketContainer(false);
     setShowPaymentContainer(true);
   }
-
-  return (!enrollment ? 
+  return (!enrollment ?
     <NoticeContainer>
-      Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso 
+      Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso
     </NoticeContainer>
-    : 
+    :
     <>
       <TicketContainer showTicketContainer={showTicketContainer}>
         <TicketTypesContainer>
@@ -91,13 +94,13 @@ export default function Payment() {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <div>{ticketTypes.map(t => <TicketType key={t.id} id={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} ticketSelected={ticketSelected} setTicketSelected={setTicketSelected} selectTicketType={selectTicketType}/>)}</div>
+            <div>{ticketTypes.map(t => <TicketType key={t.id} id={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} ticketSelected={ticketSelected} setTicketSelected={setTicketSelected} selectTicketType={selectTicketType} />)}</div>
           )}
         </TicketTypesContainer>
         <AccomodationTypesContainer showAccomodation={showAccomodation}>
           <h1>Ótimo! Agora escolha sua modalidade de hospedagem</h1>
           <div>
-            {accomodationTypes.map(a => <AccomodationType key={a.id} id={a.id} type={a.name} price={a.price}  accomodationSelected={accomodationSelected} setAccomodationSelected={setAccomodationSelected} selectAccomodationType={selectAccomodationType}/>)}
+            {accomodationTypes.map(a => <AccomodationType key={a.id} id={a.id} type={a.name} price={a.price} accomodationSelected={accomodationSelected} setAccomodationSelected={setAccomodationSelected} selectAccomodationType={selectAccomodationType} />)}
           </div>
         </AccomodationTypesContainer>
         <ReservationContainer showTotalReservation={showTotalReservation}>
@@ -109,9 +112,19 @@ export default function Payment() {
         <Subtitle>Ingresso Escolhido</Subtitle>
         <InfoCard text={ticketTypes && ticketSelected.length !== 0 ? (ticketTypes.filter(t => t.id === ticketSelected[0]))[0].name : ''} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''} isSelected width="290px" height="108px" />
         <Subtitle>Pagamento</Subtitle>
-        {!isPaid ? <CreditCardFormContainer>
-          <CreditCard numbers="121212312312388" />
-        </CreditCardFormContainer> :
+
+         {!isPaid ? <CreditCardFormContainer>
+          <CreditCard numbers={creditCardNumber.replace(/\s/g, '')} name={name} date={date} />
+          <CreditCardSectionContainer>
+            <Input label="Card Number" mask='9999 9999 9999 9999' value={creditCardNumber} onChange={e => setCreditCardNumber(e.target.value)} />
+            <p>E.g.: 49..., 51..., 36..., 37...</p>
+            <Input label="Name" value={name} onChange={e => setName(e.target.value)} />
+            <div>
+              <InputValidThru label="Valid Thru" mask='99/99' value={date} onChange={e => setDate(e.target.value)} />
+              <InputCvc label="CVC" mask='999' value={cvc} onChange={e => setCvc(e.target.value)} />
+            </div>
+          </CreditCardSectionContainer>
+        </CreditCardFormContainer>:
           <PaymentConfirmationContainer>
             <img src={check} alt="confirmed!!" />
             <div>
@@ -119,10 +132,10 @@ export default function Payment() {
               <p>Prossiga para escolha de hospedagem e atividades</p>
             </div>
           </PaymentConfirmationContainer>}
+
         <AppButton>finalizar compra</AppButton>
       </PaymentContainer>
-    </>
-  );
+    </>);
 }
 const PaymentConfirmationContainer = styled.div`
 display:flex;
@@ -176,26 +189,53 @@ border-radius:4px;
 `;
 
 const CreditCardSectionContainer = styled.form`
-  
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  label{
+    top: -5px !important;
+  }
+  label:focus{
+      top:5px !important;
+    }
+  div{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  input{
+    height: 5px;
+  }
+  p{
+    margin-top: 5px;
+    color:#c9c9c9;
+  }
 `;
-function CreditCard({ numbers, name = 'Eduardo S Santos', date = '-' }) {
+
+const InputValidThru = styled(Input)`
+  width: 180px !important;
+`;
+
+const InputCvc = styled(Input)`
+  width: 100px !important;
+`;
+function CreditCard({ numbers, name = 'Eduardo S Santos', date }) {
   const unknownNumbers = new Array(16).fill(<UnknownNumber />);
   const unknowMonth = new Array(2).fill(<UnknownNumber />);
   const unknownYear = new Array(2).fill(<UnknownNumber />);
   const [creditCardNumber, setCreditCardNumbers] = useState(() => unknownNumbers);
   const [creditCardName, setCreditCardName] = useState('');
-  const [creditCardDate, setCreditCardDate] = useState(() => unknowMonth / unknowMonth);
+  const [creditCardDate, setCreditCardDate] = useState(() => unknowMonth, unknowMonth);
   useEffect(() => {
     const writtenNumbers = numbers.slice(0, 16);
-    const [month, year] = date.split('-');
-    const unknowCardNumberRest = unknownNumbers.slice(numbers.length - 1, 16);
-    const unknowMonthRest = !month?unknowMonth:unknowMonth.slice(month.length - 1, 1);
-    const unknowYearRest = !year?unknownYear:unknownYear.slice(year.length - 1, 1);
-    // new Array(5 - creditCardDate.lenght).map((item, i) => i === 2 ? (<span>/</span>) :( <UnknownNumber />))
+    const [month, year] = date.split('/');
+    const unknowCardNumberRest = numbers.length === 0 ? unknownNumbers : unknownNumbers.slice(numbers.length - 1, 16);
+    const unknowMonthRest = !month ? unknowMonth : unknowMonth.slice(month.length - 1, 1);
+    const unknowYearRest = !year ? unknownYear : unknownYear.slice(year.length - 1, 1);
 
     setCreditCardNumbers(prev => [...writtenNumbers, ...unknowCardNumberRest]);
-    setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', ...year, ...unknowYearRest]);
-    setCreditCardName(prev => name);
+    setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', year, ...unknowYearRest]);
+    setCreditCardName(prev => name.length === 0 ? 'YOUR NAME HERE' : name.toUpperCase());
   }, [numbers, name, date]);
   return (<CreditCardContainer>
     <Chip src={chipUrl} alt="chip" />
@@ -319,6 +359,7 @@ height:170px;
 background-color: rgb(146,146,146);
 border-radius:20px;
 position:relative;
+margin-right: 30px;
 `;
 const CreditCardNumbersContainer = styled.p`
 color: white;
@@ -334,7 +375,7 @@ span {
 }
 `;
 const CreditCardFormContainer = styled.form`
-
+  display: flex;
 `;
 
 export function InfoCard({ text, price, width, height, isSelected = false }) {
