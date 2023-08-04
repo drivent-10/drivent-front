@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react';
 import chipUrl from '../../../assets/images/chip.svg';
 import check from '../../../assets/images/check.jpg';
 import Input from '../../../components/Form/Input';
+import { toast } from 'react-toastify';
+import useSaveTicket from '../../../hooks/api/useSaveTicket';
+import useTicket from '../../../hooks/api/useTicket';
 export default function Payment() {
   const [date, setDate] = useState('');
   const [cvc, setCvc] = useState('');
@@ -21,17 +24,40 @@ export default function Payment() {
   const [showTicketContainer, setShowTicketContainer] = useState(true);
   const [showPaymentContainer, setShowPaymentContainer] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
+  const { saveTicketLoading, saveTicket } = useSaveTicket();
+  const { getTicket } = useTicket();
+  const [ticketChoosed, setTicketChoosed] = useState('');
+  const [priceTicketChoosed, setPriceTicketChoosed] = useState('');
+
+  useEffect(async() => {
+    try{
+      const ticket = await getTicket();
+      if(ticket.TicketType.includesHotel) {
+        setTicketChoosed(ticket.TicketType.name + ' + Com Hotel');
+      } else {
+        setTicketChoosed(ticket.TicketType.name);
+      }
+      setPriceTicketChoosed(ticket.TicketType.price);
+      setShowTicketContainer(false);
+      setShowPaymentContainer(true);
+    }
+    catch (err) {
+      console.log('Usuário não tem ingresso reservado!');
+    }
+  }, []);
 
   const accomodationTypes = [
     {
       id: 1,
       name: 'Sem Hotel',
-      price: 0
+      price: 0,
+      includesHotel: false,
     },
     {
       id: 2,
       name: 'Com Hotel',
-      price: 350
+      price: 350,
+      includesHotel: true,
     }
   ];
   const [accomodationSelected, setAccomodationSelected] = useState([]);
@@ -78,10 +104,46 @@ export default function Payment() {
     }
   }
 
-  function bookTicket() {
-    setShowTicketContainer(false);
-    setShowPaymentContainer(true);
+  async function bookTicket(ticketSelected, accomodationSelected) {
+    let ticketTypeId = ticketSelected[0];
+
+    if(accomodationSelected.length !== 0) {
+      const accomodation = accomodationTypes.filter(a => a.id === accomodationSelected[0]);
+      const ticketType = ticketTypes.filter(t => t.name !== 'Online' && t.includesHotel === accomodation[0].includesHotel);
+      ticketTypeId = ticketType[0].id;
+    }
+
+    const obj = { ticketTypeId };
+    
+    try {
+      await saveTicket(obj);
+      toast('Ingresso reservado com sucesso!');
+      setShowTicketContainer(false);
+      setShowPaymentContainer(true);
+    } catch (err) {
+      toast('Não foi possível reservar o ingresso!');
+    }
   }
+
+  function infoCardText() {
+    let name;
+    if(ticketTypes && ticketSelected.length !== 0) {
+      if(accomodationSelected.length !== 0) {
+        const accomodation = accomodationTypes.filter(a => a.id === accomodationSelected[0]);
+        if(accomodation[0].includesHotel) {
+          name = 'Presencial + Com Hotel';
+        } else{
+          name = 'Presencial';
+        }
+      } else{
+        name = 'Online';
+      }
+    } else {
+      name = ticketChoosed;
+    }
+    return name;
+  }
+
   return (!enrollment ?
     <NoticeContainer>
       Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso
@@ -94,7 +156,7 @@ export default function Payment() {
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <div>{ticketTypes.map(t => <TicketType key={t.id} id={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} ticketSelected={ticketSelected} setTicketSelected={setTicketSelected} selectTicketType={selectTicketType} />)}</div>
+            <div>{ticketTypes.filter(t => t.includesHotel === false).map(t => <TicketType key={t.id} id={t.id} type={t.name} price={t.price} isRemote={t.isRemote} includesHotel={t.includesHotel} ticketSelected={ticketSelected} setTicketSelected={setTicketSelected} selectTicketType={selectTicketType} />)}</div>
           )}
         </TicketTypesContainer>
         <AccomodationTypesContainer showAccomodation={showAccomodation}>
@@ -105,15 +167,15 @@ export default function Payment() {
         </AccomodationTypesContainer>
         <ReservationContainer showTotalReservation={showTotalReservation}>
           <h1>Fechado! O total ficou em <strong>R$ {ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''}</strong>. Agora é só confirmar:</h1>
-          <button onClick={bookTicket}>RESERVAR INGRESSO</button>
+          <button onClick={() => bookTicket(ticketSelected, accomodationSelected)}>RESERVAR INGRESSO</button>
         </ReservationContainer>
       </TicketContainer>
       <PaymentContainer showPaymentContainer={showPaymentContainer}>
         <Subtitle>Ingresso Escolhido</Subtitle>
-        <InfoCard text={ticketTypes && ticketSelected.length !== 0 ? (ticketTypes.filter(t => t.id === ticketSelected[0]))[0].name : ''} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : ''} isSelected width="290px" height="108px" />
+        <InfoCard text={infoCardText()} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : priceTicketChoosed} isSelected width="290px" height="108px" />
         <Subtitle>Pagamento</Subtitle>
 
-         {!isPaid ? <CreditCardFormContainer>
+        {!isPaid ? <CreditCardFormContainer>
           <CreditCard numbers={creditCardNumber.replace(/\s/g, '')} name={name} date={date} />
           <CreditCardSectionContainer>
             <Input label="Card Number" mask='9999 9999 9999 9999' value={creditCardNumber} onChange={e => setCreditCardNumber(e.target.value)} />
@@ -382,7 +444,7 @@ export function InfoCard({ text, price, width, height, isSelected = false }) {
   return (
     <InfoCardContainer isSelected={isSelected} width={width} height={height}>
       <p>{text}</p>
-      <p>{price}</p>
+      <p>R$ {price}</p>
     </InfoCardContainer>);
 }
 const InfoCardContainer = styled.section`
