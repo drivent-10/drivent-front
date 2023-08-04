@@ -1,7 +1,7 @@
 import useEnrollment from '../../../hooks/api/useEnrollment';
 import styled from 'styled-components';
 import useTicketTypes from '../../../hooks/api/useTicketTypes';
-import TicketType, { TypeContainer } from '../../../components/TicketTypes';
+import TicketType from '../../../components/TicketTypes';
 import AccomodationType from '../../../components/AccomodationTypes';
 import { useEffect, useState } from 'react';
 import chipUrl from '../../../assets/images/chip.svg';
@@ -9,12 +9,15 @@ import check from '../../../assets/images/check.jpg';
 import Input from '../../../components/Form/Input';
 import { toast } from 'react-toastify';
 import useSaveTicket from '../../../hooks/api/useSaveTicket';
+import useSavePayment from '../../../hooks/api/useSavePayment';
 import useTicket from '../../../hooks/api/useTicket';
+import FormValidations from '../../../components/Payments/FormValidations';
+import { useForm } from '../../../hooks/useForm';
+import useLocalStorage from '../../../hooks/useLocalStorage';
+import { useNavigate } from 'react-router-dom';
+import Button from '../../../components/Form/Button';
+
 export default function Payment() {
-  const [date, setDate] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [creditCardNumber, setCreditCardNumber] = useState('');
-  const [name, setName] = useState('');
   const { enrollment } = useEnrollment();
   const { ticketTypes } = useTicketTypes();
   const [ticketSelected, setTicketSelected] = useState([]);
@@ -27,19 +30,64 @@ export default function Payment() {
   const { saveTicketLoading, saveTicket } = useSaveTicket();
   const { getTicket } = useTicket();
   const [ticketChoosed, setTicketChoosed] = useState('');
+  const [ticketId, setTicketId] = useState('');
   const [priceTicketChoosed, setPriceTicketChoosed] = useState('');
+  const [{ token }] = useLocalStorage('userData');
+  const navigate = useNavigate();
+
+  const { savePaymentLoading,
+    savePaymentError,
+    savePayment } = useSavePayment();
+  const {
+    handleSubmit,
+    handleChange,
+    data,
+    errors,
+    setData,
+  } = useForm({
+    validations: FormValidations,
+
+    onSubmit: async(data) => {
+      const newData = {
+        name: data.creditCardName,
+        number: data.creditCardNumber.replaceAll(' ', ''),
+        expirationDate: data.creditCardDate.replace('/', '-'),
+        cvv: data.creditCardCvc,
+      };
+    
+      try {
+        await savePayment({ ticketId, cardData: newData }, token);
+        toast('Informações salvas com sucesso!');
+        setIsPaid(true);
+        setTimeout(() => navigate('/dashboard/hotel'), 5000);
+      } catch (err) {
+        toast('Não foi possível salvar suas informações!');
+      }
+    },
+
+    initialValues: {
+      creditCardNumber: '',
+      creditCardDate: '',
+      creditCardName: '',
+      creditCardCvc: ''
+    },
+  });
 
   useEffect(async() => {
-    try{
+    try {
       const ticket = await getTicket();
-      if(ticket.TicketType.includesHotel) {
+      if (ticket.TicketType.includesHotel) {
         setTicketChoosed(ticket.TicketType.name + ' + Com Hotel');
       } else {
         setTicketChoosed(ticket.TicketType.name);
       }
+      setTicketId(() => ticket.id);
       setPriceTicketChoosed(ticket.TicketType.price);
       setShowTicketContainer(false);
       setShowPaymentContainer(true);
+      if(ticket.status ==='PAID') {
+        setIsPaid(() => true);
+      }
     }
     catch (err) {
       console.log('Usuário não tem ingresso reservado!');
@@ -107,14 +155,14 @@ export default function Payment() {
   async function bookTicket(ticketSelected, accomodationSelected) {
     let ticketTypeId = ticketSelected[0];
 
-    if(accomodationSelected.length !== 0) {
+    if (accomodationSelected.length !== 0) {
       const accomodation = accomodationTypes.filter(a => a.id === accomodationSelected[0]);
       const ticketType = ticketTypes.filter(t => t.name !== 'Online' && t.includesHotel === accomodation[0].includesHotel);
       ticketTypeId = ticketType[0].id;
     }
 
     const obj = { ticketTypeId };
-    
+
     try {
       await saveTicket(obj);
       toast('Ingresso reservado com sucesso!');
@@ -127,15 +175,15 @@ export default function Payment() {
 
   function infoCardText() {
     let name;
-    if(ticketTypes && ticketSelected.length !== 0) {
-      if(accomodationSelected.length !== 0) {
+    if (ticketTypes && ticketSelected.length !== 0) {
+      if (accomodationSelected.length !== 0) {
         const accomodation = accomodationTypes.filter(a => a.id === accomodationSelected[0]);
-        if(accomodation[0].includesHotel) {
+        if (accomodation[0].includesHotel) {
           name = 'Presencial + Com Hotel';
-        } else{
+        } else {
           name = 'Presencial';
         }
-      } else{
+      } else {
         name = 'Online';
       }
     } else {
@@ -170,23 +218,33 @@ export default function Payment() {
           <button onClick={() => bookTicket(ticketSelected, accomodationSelected)}>RESERVAR INGRESSO</button>
         </ReservationContainer>
       </TicketContainer>
-      <PaymentContainer showPaymentContainer={showPaymentContainer}>
+      <PaymentContainer onSubmit={handleSubmit} showPaymentContainer={showPaymentContainer}>
         <Subtitle>Ingresso Escolhido</Subtitle>
         <InfoCard text={infoCardText()} price={ticketTypes && ticketSelected.length !== 0 ? calculateTotalReservation() : priceTicketChoosed} isSelected width="290px" height="108px" />
         <Subtitle>Pagamento</Subtitle>
 
         {!isPaid ? <CreditCardFormContainer>
-          <CreditCard numbers={creditCardNumber.replace(/\s/g, '')} name={name} date={date} />
+          <CreditCard numbers={data?.creditCardNumber.replace(/\s/g, '')} name={data?.creditCardName} date={data?.creditCardDate} />
           <CreditCardSectionContainer>
-            <Input label="Card Number" mask='9999 9999 9999 9999' value={creditCardNumber} onChange={e => setCreditCardNumber(e.target.value)} />
+            <InputWrapper>
+              <Input label="Card Number" name="creditCardNumber" mask='9999 9999 9999 9999' value={data?.creditCardNumber.replace(' ', '')} onChange={handleChange('creditCardNumber')} />
+              {errors.creditCardNumber && <ErrorMsg>{errors.creditCardNumber}</ErrorMsg>}
+            </InputWrapper>
             <p>E.g.: 49..., 51..., 36..., 37...</p>
-            <Input label="Name" value={name} onChange={e => setName(e.target.value)} />
+            <InputWrapper>
+              <Input label="Name" name="creditCardName" value={data?.creditCardName} onChange={handleChange('creditCardName')} />
+              {errors.creditCardName && <ErrorMsg>{errors.creditCardName}</ErrorMsg>}
+            </InputWrapper>
             <div>
-              <InputValidThru label="Valid Thru" mask='99/99' value={date} onChange={e => setDate(e.target.value)} />
-              <InputCvc label="CVC" mask='999' value={cvc} onChange={e => setCvc(e.target.value)} />
+              <InputWrapper>
+                <InputValidThru label="Valid Thru" name="creditCardDate" mask='99/99' value={data?.creditCardDate} onChange={handleChange('creditCardDate')} />
+                <InputCvc label="CVC" name="creditCardCvc" mask='999' value={data?.creditCardCvc} onChange={handleChange('creditCardCvc')} />
+                {errors.creditCardDate && <DateErrorMsg>{errors.creditCardDate}</DateErrorMsg>}
+                {errors.creditCardCvc && <CVCErrorMsg hasDateError={errors.creditCardDate}>{errors.creditCardCvc}</CVCErrorMsg>}
+              </InputWrapper>
             </div>
           </CreditCardSectionContainer>
-        </CreditCardFormContainer>:
+        </CreditCardFormContainer> :
           <PaymentConfirmationContainer>
             <img src={check} alt="confirmed!!" />
             <div>
@@ -195,10 +253,30 @@ export default function Payment() {
             </div>
           </PaymentConfirmationContainer>}
 
-        <AppButton>finalizar compra</AppButton>
+        {!isPaid &&  <AppButton onClick={handleSubmit}>finalizar compra</AppButton>}
       </PaymentContainer>
     </>);
 }
+const InputWrapper = styled.div`
+position:relative;
+`;
+
+const ErrorMsg = styled.p`
+position:absolute;
+top:-12px;
+left:0;
+color:red !important;
+font-size:14px;
+`;
+const CVCErrorMsg = styled(ErrorMsg)`
+top: ${({ hasDateError }) => hasDateError? '59px': '44px'};
+left: ${({ hasDateError }) => hasDateError? '0px': '200px'};
+
+
+`;
+const DateErrorMsg = styled(ErrorMsg)`
+top: 44px;
+`;
 const PaymentConfirmationContainer = styled.div`
 display:flex;
 align-items:center;
@@ -223,7 +301,7 @@ div {
   }
 }
 `;
-const PaymentContainer = styled.div`
+const PaymentContainer = styled.form`
 display: ${({ showPaymentContainer }) => !showPaymentContainer && 'none'};
 `;
 
@@ -231,35 +309,37 @@ const TicketContainer = styled.div`
 display: ${({ showTicketContainer }) => !showTicketContainer && 'none'};
 `;
 
-function AppButton({ children }) {
-  return <StyledButton>{children}</StyledButton>;
-}
-const StyledButton = styled.button`
+const AppButton = styled(Button)`
 padding: ${({ padding }) => padding ? padding : '10px 13px'};
 font-size:14px;
 text-align:center;
 text-transform:uppercase;
-margin-top: 50px;
+margin-top: 50px !important;
 color:black;
 border: none;
 background-color:#E0E0E0;
 box-shadow: drop-shadow(0px 2px 10px black);
 border-radius:4px;
+cursor:pointer;
 :hover{
   background-color:#CCC;
 }
 `;
 
-const CreditCardSectionContainer = styled.form`
+const CreditCardSectionContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 300px;
   label{
     top: -5px !important;
   }
-  label:focus{
-      top:5px !important;
-    }
+  label.Mui-focused{ 
+    top: 0px !important;
+  }
+  label.MuiFormLabel-filled{ 
+    top: 0px !important;
+  }
+
   div{
     width: 100%;
     display: flex;
@@ -281,13 +361,13 @@ const InputValidThru = styled(Input)`
 const InputCvc = styled(Input)`
   width: 100px !important;
 `;
-function CreditCard({ numbers, name = 'Eduardo S Santos', date }) {
+function CreditCard({ numbers, name, date }) {
   const unknownNumbers = new Array(16).fill(<UnknownNumber />);
   const unknowMonth = new Array(2).fill(<UnknownNumber />);
   const unknownYear = new Array(2).fill(<UnknownNumber />);
   const [creditCardNumber, setCreditCardNumbers] = useState(() => unknownNumbers);
-  const [creditCardName, setCreditCardName] = useState('');
-  const [creditCardDate, setCreditCardDate] = useState(() => unknowMonth, unknowMonth);
+  const [creditCardName, setCreditCardName] = useState('YOUR NAME HERE');
+  const [creditCardDate, setCreditCardDate] = useState(() => [unknowMonth, unknownYear]);
   useEffect(() => {
     const writtenNumbers = numbers.slice(0, 16);
     const [month, year] = date.split('/');
@@ -297,7 +377,7 @@ function CreditCard({ numbers, name = 'Eduardo S Santos', date }) {
 
     setCreditCardNumbers(prev => [...writtenNumbers, ...unknowCardNumberRest]);
     setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', year, ...unknowYearRest]);
-    setCreditCardName(prev => name.length === 0 ? 'YOUR NAME HERE' : name.toUpperCase());
+    setCreditCardName(prev => name.length === 0 ? 'YOUR NAME HERE' : name.toUpperCase().slice(0, 19));
   }, [numbers, name, date]);
   return (<CreditCardContainer>
     <Chip src={chipUrl} alt="chip" />
@@ -399,14 +479,7 @@ left:30px;
 width:35px;
 height:26px;
 `;
-// function CreditCardNumbers() {
-//   // const [numbers, setNumbers] = useState(() => new Uint8Array(16).fill('•'))
-//   return (<CreditCardNumbersContainer>{userCardNumber}
-//   </CreditCardNumbersContainer>);
-// }
-function CardNumber({ children }) {
-  return <span>{children}</span>;
-}
+
 const UnknownNumber = styled.div`
 display:inline-block;
 border-radius:50%;
@@ -431,12 +504,10 @@ display: flex;
 align-items:center;
 justify-content:space-evenly;
 span {
-  /* margin-left:10px; */
   letter-spacing:1px;
-
 }
 `;
-const CreditCardFormContainer = styled.form`
+const CreditCardFormContainer = styled.div`
   display: flex;
 `;
 
