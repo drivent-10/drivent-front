@@ -4,16 +4,15 @@ import { Subtitle } from '../Subtitle';
 import useHotel from '../../hooks/api/useHotel';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import useRoom from '../../hooks/api/useRoom';
 
 export default function HotelCards({ hotelId, setHotelId }) {
-  // TODO: get data from API
   const { hotel } = useHotel();
   const [hotels, setHotels] = useState();
 
   useEffect(() => {
     if (hotel) {
       setHotels(hotel);
-      console.log(hotel);
     }
   }, [hotel]);
 

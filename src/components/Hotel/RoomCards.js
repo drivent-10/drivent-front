@@ -1,16 +1,28 @@
 import { Subtitle } from '../Subtitle';
-import { rooms } from '../../mocks/hotel.mock';
 import styled from 'styled-components';
 import RoomCard from './RoomCard';
+import { useEffect, useState } from 'react';
+import useRoom from '../../hooks/api/useRoom';
+import { getRoomApi } from '../../services/roomApi';
 
-export default function RoomCards({ roomId, setRoomId }) {
-  // TODO: get data from API
+export default function RoomCards({ hotelId }) {
+  const { getRoom } = useRoom();
+  const [rooms, setRooms] = useState();
+
+  useEffect(() => {
+    const fetchRooms = async() => {
+      const room = await getRoom(hotelId);
+      setRooms(room);
+    };
+    fetchRooms();
+  }, [hotelId]);
+
   return (
     <>
       <Subtitle>Ótima pedida! Agora escolha seu quarto:</Subtitle>
       <Rooms>
-        {rooms.map((r) => (
-          <RoomCard key={r.id} {...r} roomId={roomId} setRoomId={setRoomId} />
+        {rooms?.map((r) => (
+          <RoomCard key={r.id} {...r} />
         ))}
       </Rooms>
     </>

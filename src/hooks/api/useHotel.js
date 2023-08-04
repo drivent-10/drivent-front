@@ -16,6 +16,6 @@ export default function useHotel() {
     hotel,
     hotelLoading,
     hotelError,
-    getHotel
+    getHotel,
   };
 }

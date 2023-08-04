@@ -7,7 +7,7 @@ export default function Hotel() {
   return (
     <>
       <HotelCards hotelId={hotelId} setHotelId={setHotelId} />
-      {hotelId && <RoomCards />}
+      {hotelId && <RoomCards hotelId={hotelId} />}
     </>
   );
 }

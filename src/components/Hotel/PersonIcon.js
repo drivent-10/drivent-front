@@ -7,6 +7,6 @@ export const PersonFillIcon = styled(BsFillPersonFill)`
 `;
 
 export const PersonIcon = styled(BsPerson)`
-  font-size: 27px;
+  font-size: 24px;
   color: #000;
 `;

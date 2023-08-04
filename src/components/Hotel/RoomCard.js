@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import { PersonFillIcon, PersonIcon } from './PersonIcon';
+import { useContext } from 'react';
+import BookingContext from '../../contexts/BookingContext';
 
 export default function RoomCard({ name, capacity, availability }) {
   const fillPeople = Array.from({ length: capacity });
@@ -34,13 +36,13 @@ const Card = styled.div`
   align-items: center;
 
   &:hover {
-    cursor: pointer;
-    box-shadow: 0 2px 10px 3px rgba(0, 0, 0, 0.2);
+    cursor: ${({ isFull }) => (isFull ? 'not-allowed' : 'pointer')};
+    box-shadow: ${({ isFull }) => (isFull ? '0' : '0 2px 10px 3px rgba(0, 0, 0, 0.2)')};
   }
 
   p {
     color: ${({ isFull }) => (isFull ? '#9D9D9D' : '#454545')};
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 24px;
   }
