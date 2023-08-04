@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import { PersonFillIcon, PersonIcon } from './PersonIcon';
+import { useContext } from 'react';
+import BookingContext from '../../contexts/BookingContext';
 
 export default function RoomCard({ name, capacity, availability }) {
   const fillPeople = Array.from({ length: capacity });
@@ -40,7 +42,7 @@ const Card = styled.div`
 
   p {
     color: ${({ isFull }) => (isFull ? '#9D9D9D' : '#454545')};
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 24px;
   }
