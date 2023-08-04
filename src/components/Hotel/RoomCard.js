@@ -36,8 +36,8 @@ const Card = styled.div`
   align-items: center;
 
   &:hover {
-    cursor: pointer;
-    box-shadow: 0 2px 10px 3px rgba(0, 0, 0, 0.2);
+    cursor: ${({ isFull }) => (isFull ? 'not-allowed' : 'pointer')};
+    box-shadow: ${({ isFull }) => (isFull ? '0' : '0 2px 10px 3px rgba(0, 0, 0, 0.2)')};
   }
 
   p {
