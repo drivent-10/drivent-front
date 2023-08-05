@@ -16,7 +16,10 @@ export default function HotelCards({ hotelId, setHotelId }) {
       setHotels(hotel);
     }
     if (hotelError) {
-      if (hotelError.response.data.type === 'unpaid') {
+      if (hotelError.response.data === 'Not Found') {
+        setMessage('Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso');
+      }
+      else if (hotelError.response.data.type === 'unpaid') {
         setMessage('Você precisa ter confirmado pagamento antes de fazer a escolha de hospedagem');
       }
       else if (hotelError.response.data.type === 'unavailable') {
@@ -27,15 +30,17 @@ export default function HotelCards({ hotelId, setHotelId }) {
 
   return (
     <>
-      <Subtitle>Primeiro, escolha seu hotel</Subtitle>
       {hotelError ? (
         <Notice>{message}</Notice>
       ) : (
-        <Hotels>
-          {hotels?.map((h) => (
-            <HotelCard key={h.id} {...h} hotelId={hotelId} setHotelId={setHotelId} />
-          ))}
-        </Hotels>
+        <>
+          <Subtitle>Primeiro, escolha seu hotel</Subtitle>
+          <Hotels>
+            {hotels?.map((h) => (
+              <HotelCard key={h.id} {...h} hotelId={hotelId} setHotelId={setHotelId} />
+            ))}
+          </Hotels>
+        </>
       )}
     </>
   );

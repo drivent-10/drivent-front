@@ -155,7 +155,6 @@ export default function Payment() {
     let ticketTypeId = ticketSelected[0];
 
     if (accomodationSelected.length !== 0) {
-
       const accomodation = accomodationTypes.filter((a) => a.id === accomodationSelected[0]);
       const ticketType = ticketTypes.filter(
         (t) => t.name !== 'Online' && t.includesHotel === accomodation[0].includesHotel
@@ -260,7 +259,6 @@ export default function Payment() {
         />
         <Subtitle>Pagamento</Subtitle>
 
-
         {!isPaid ? <CreditCardFormContainer>
           <CreditCard numbers={data?.creditCardNumber.replace(/\s/g, '')} name={data?.creditCardName} date={data?.creditCardDate} />
           <CreditCardSectionContainer>
@@ -351,7 +349,6 @@ const TicketContainer = styled.div`
   display: ${({ showTicketContainer }) => !showTicketContainer && 'none'};
 `;
 
-
 const AppButton = styled(Button)`
 padding: ${({ padding }) => padding ? padding : '10px 13px'};
 font-size:14px;
@@ -422,7 +419,6 @@ function CreditCard({ numbers, name, date }) {
     setCreditCardNumbers(prev => [...writtenNumbers, ...unknowCardNumberRest]);
     setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', year, ...unknowYearRest]);
     setCreditCardName(prev => name.length === 0 ? 'YOUR NAME HERE' : name.toUpperCase().slice(0, 19));
-
   }, [numbers, name, date]);
   return (
     <CreditCardContainer>
