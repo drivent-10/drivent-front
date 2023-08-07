@@ -28,14 +28,12 @@ export default function Payment() {
   const [showTicketContainer, setShowTicketContainer] = useState(true);
   const [showPaymentContainer, setShowPaymentContainer] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
-  const { saveTicketLoading, saveTicket } = useSaveTicket();
-  const { getTicket } = useTicket();
+  const { saveTicketLoading, saveTicket, ticketSaved } = useSaveTicket();
+  const { ticket, getTicket } = useTicket();
   const [ticketChoosed, setTicketChoosed] = useState('');
-  const [ticketId, setTicketId] = useState('');
   const [priceTicketChoosed, setPriceTicketChoosed] = useState('');
   const [{ token }] = useLocalStorage('userData');
   const navigate = useNavigate();
-
   const { savePaymentLoading, savePayment } = useSavePayment();
   const {
     handleSubmit,
@@ -54,7 +52,7 @@ export default function Payment() {
       };
     
       try {
-        await savePayment({ ticketId, cardData: newData }, token);
+        await savePayment({ ticketId: ticket?.id ? ticket.id : ticketSaved.id, cardData: newData }, token);
         toast('Informações salvas com sucesso!');
         setIsPaid(true);
         setTimeout(() => navigate('/dashboard/hotel'), 5000);
@@ -73,13 +71,12 @@ export default function Payment() {
 
   useEffect(async() => {
     try {
-      const ticket = await getTicket();
+      // const ticket = await getTicket();
       if (ticket.TicketType.includesHotel) {
         setTicketChoosed(ticket.TicketType.name + ' + Com Hotel');
       } else {
         setTicketChoosed(ticket.TicketType.name);
       }
-      setTicketId(() => ticket.id);
       setPriceTicketChoosed(ticket.TicketType.price);
       setShowTicketContainer(false);
       setShowPaymentContainer(true);
@@ -89,7 +86,7 @@ export default function Payment() {
     } catch (err) {
       console.log('Usuário não tem ingresso reservado!');
     }
-  }, []);
+  }, [ticket]);
 
   const accomodationTypes = [
     {
@@ -161,7 +158,7 @@ export default function Payment() {
     }
 
     const obj = { ticketTypeId };
-
+  
     try {
       await saveTicket(obj);
       toast('Ingresso reservado com sucesso!');
