@@ -258,6 +258,7 @@ export default function Payment() {
           {!isPaid ? ( <CreditCardForm data={data} errors={errors} handleChange={handleChange}/>) : <PaymentConfirmation />}
           {!isPaid &&  <AppButton onClick={handleSubmit}>finalizar compra</AppButton>}
         </PaymentContainer>)}
+
     </>
   );
 }
@@ -292,6 +293,76 @@ cursor:pointer;
 }
 
 `;
+
+
+const CreditCardSectionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  label {
+    top: -5px !important;
+  }
+  label.Mui-focused{ 
+    top: 0px !important;
+  }
+  label.MuiFormLabel-filled{ 
+    top: 0px !important;
+  }
+
+  div{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  input {
+    height: 5px;
+  }
+  p {
+    margin-top: 5px;
+    color: #c9c9c9;
+  }
+`;
+
+const InputValidThru = styled(Input)`
+  width: 180px !important;
+`;
+
+const InputCvc = styled(Input)`
+  width: 100px !important;
+`;
+function CreditCard({ numbers, name, date }) {
+  const unknownNumbers = new Array(16).fill(<UnknownNumber />);
+  const unknowMonth = new Array(2).fill(<UnknownNumber />);
+  const unknownYear = new Array(2).fill(<UnknownNumber />);
+  const [creditCardNumber, setCreditCardNumbers] = useState(() => unknownNumbers);
+  const [creditCardName, setCreditCardName] = useState('YOUR NAME HERE');
+  const [creditCardDate, setCreditCardDate] = useState(() => [unknowMonth, unknownYear]);
+  useEffect(() => {
+    const writtenNumbers = numbers.slice(0, 16);
+    const [month, year] = date.split('/');
+    const unknowCardNumberRest = numbers.length === 0 ? unknownNumbers : unknownNumbers.slice(numbers.length - 1, 16);
+    const unknowMonthRest = !month ? unknowMonth : unknowMonth.slice(month.length - 1, 1);
+    const unknowYearRest = !year ? unknownYear : unknownYear.slice(year.length - 1, 1);
+
+    setCreditCardNumbers(prev => [...writtenNumbers, ...unknowCardNumberRest]);
+    setCreditCardDate(prev => [...month, ...unknowMonthRest, '/', year, ...unknowYearRest]);
+    setCreditCardName(prev => name.length === 0 ? 'YOUR NAME HERE' : name.toUpperCase().slice(0, 19));
+  }, [numbers, name, date]);
+  return (
+    <CreditCardContainer>
+      <Chip src={chipUrl} alt="chip" />
+      <CreditCardNumbersContainer>
+        <span>{creditCardNumber.slice(0, 4)}</span>
+        <span>{creditCardNumber.slice(4, 8)}</span>
+        <span>{creditCardNumber.slice(8, 12)}</span>
+        <span>{creditCardNumber.slice(12, 16)} </span>
+      </CreditCardNumbersContainer>
+      <CardName>{creditCardName}</CardName>
+      <CardDateTitle>valid thru</CardDateTitle>
+      <CardDate>{<>{creditCardDate}</>}</CardDate>
+    </CreditCardContainer>
+  );
+}
 
 const TicketTypesContainer = styled.div`
   margin-bottom: 25px;
