@@ -7,12 +7,13 @@ export default function useSaveTicket() {
   const token = useToken();
 
   const {
+    data: ticketSaved,
     loading: saveTicketLoading,
     error: saveTicketError,
     act: saveTicket
-  } = useAsync((data) => ticketTypesApi.saveTicket(data, token), false);
-
+  } = useAsync((data) => ticketTypesApi.saveTicket(data, token));
   return {
+    ticketSaved,
     saveTicketLoading,
     saveTicketError,
     saveTicket
