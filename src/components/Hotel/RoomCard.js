@@ -1,22 +1,23 @@
 import styled from 'styled-components';
 import PersonIcon from './PersonIcon';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import BookingContext from '../../contexts/BookingContext';
 
 export default function RoomCard({ name, capacity, availability }) {
-  const fillPeople = Array.from({ length: capacity });
-  let icons;
-
-  if (availability === 0) {
-    icons = fillPeople.map((_, index) => <PersonIcon key={index} isFilled={true} color="#8c8c8c" />);
-  } else {
-    icons = fillPeople.map((_, index) => <PersonIcon key={index} isFilled={index >= availability} color="#000" />);
-  }
+  const [icons, setIcons] = useState(Array
+    .from({ length: capacity })
+    .map((_, index) => (
+      { key: index,
+        isFilled: availability === 0 || index >= availability,
+        color: availability === 0 ? '#8c8c8c': '#000' }
+    )));
 
   return (
     <Card isFull={availability === 0}>
       <p>{name}</p>
-      <div>{icons}</div>
+      <div>{icons.map(icon => (
+        <PersonIcon key={icon.key} isFilled={icon.isFilled} color={icon.color} />
+      ))}</div>
     </Card>
   );
 }
