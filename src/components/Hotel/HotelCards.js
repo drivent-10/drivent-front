@@ -7,7 +7,7 @@ import { useState } from 'react';
 import useRoom from '../../hooks/api/useRoom';
 import Notice from '../Notice';
 
-export default function HotelCards({ hotelId, setHotelId }) {
+export default function HotelCards() {
   const { hotel, hotelError } = useHotel();
   const [hotels, setHotels] = useState();
   const [message, setMessage] = useState();
@@ -37,7 +37,7 @@ export default function HotelCards({ hotelId, setHotelId }) {
           <Subtitle>Primeiro, escolha seu hotel</Subtitle>
           <Hotels>
             {hotels?.map((h) => (
-              <HotelCard key={h.id} {...h} hotelId={hotelId} setHotelId={setHotelId} />
+              <HotelCard key={h.id} {...h} />
             ))}
           </Hotels>
         </>

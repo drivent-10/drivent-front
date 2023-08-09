@@ -1,20 +1,20 @@
 import { Subtitle } from '../Subtitle';
 import styled from 'styled-components';
 import RoomCard from './RoomCard';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import useRoom from '../../hooks/api/useRoom';
-import { getRoomApi } from '../../services/roomApi';
+import BookingContext from '../../contexts/BookingContext';
 
-export default function RoomCards({ hotelId }) {
+export default function RoomCards() {
   const { getRoom } = useRoom();
+  const { hotelId } = useContext(BookingContext);
   const [rooms, setRooms] = useState();
 
   useEffect(() => {
-    const fetchRooms = async() => {
+    (async() => {
       const room = await getRoom(hotelId);
       setRooms(room);
-    };
-    fetchRooms();
+    })();
   }, [hotelId]);
 
   return (

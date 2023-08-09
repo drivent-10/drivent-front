@@ -1,13 +1,14 @@
 import HotelCards from '../../../components/Hotel/HotelCards';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import RoomCards from '../../../components/Hotel/RoomCards';
+import BookingContext from '../../../contexts/BookingContext';
 
 export default function Hotel() {
-  const [hotelId, setHotelId] = useState(null);
+  const { hotelId } = useContext(BookingContext);
   return (
     <>
-      <HotelCards hotelId={hotelId} setHotelId={setHotelId} />
-      {hotelId && <RoomCards hotelId={hotelId} />}
+      <HotelCards />
+      {hotelId && <RoomCards />}
     </>
   );
 }

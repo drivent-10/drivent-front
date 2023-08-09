@@ -1,6 +1,9 @@
 import styled from 'styled-components';
+import { useContext } from 'react';
+import BookingContext from '../../contexts/BookingContext';
 
-export default function HotelCard({ id, name, accommodationType, availability, image, hotelId, setHotelId }) {
+export default function HotelCard({ id, name, accommodationType, availability, image }) {
+  const { hotelId, setHotelId } = useContext(BookingContext);
   return (
     <Card isActive={id === hotelId} onClick={() => setHotelId(id)}>
       <img src={image} alt={name} />

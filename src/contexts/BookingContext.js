@@ -3,9 +3,10 @@ import { createContext, useState } from 'react';
 const BookingContext = createContext();
 
 export function BookingProvider({ children }) {
-  const [bookingData, setBookingData] = useState({ hotelId: null, roomId: null });
+  const [roomId, setRoomId] = useState(null);
+  const [hotelId, setHotelId] = useState(null);
 
-  return <BookingContext.Provider value={{ bookingData, setBookingData }}>{children}</BookingContext.Provider>;
+  return <BookingContext.Provider value={{ roomId, setRoomId, hotelId, setHotelId }}>{children}</BookingContext.Provider>;
 }
 
 export default BookingContext;
