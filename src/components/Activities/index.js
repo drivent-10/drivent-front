@@ -5,16 +5,21 @@ import Button from '../Form/Button';
 import check from '../../assets/images/akar-icons_circle-check.svg';
 import xIcon from '../../assets/images/ant-design_close-circle-outlined.svg';
 import enter from '../../assets/images/pepicons_enter.svg';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import useActivities from '../../hooks/api/useActivities';
 
 export default function ActivitiesContainer() {
+  const { activities, activitiesError } = useActivities();
   const [alreadyPaidForEvent, setAlreadyPaidForEvent] = useState(true);
   const [hasVipTicket, setHasVipTicket] = useState(false);
-  const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(1);
+  const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(1); 
   //  1)falta fazer requisição para buscar datas do evento e preencher os botões dinamicamente
   //  2)depois ao clicar no botão setar o hasAlreadySelectedADate como true e
   //  buscar todas atividades na data escolhida
   //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
+  useEffect(() => {
+    console.log(activities);
+  }, []);
   return (
     <>
       {!hasVipTicket && !alreadyPaidForEvent && <StyledMessage>Você precisa ter confirmado pagamento antes<br /> de fazer a escolha de atividades</StyledMessage>}
