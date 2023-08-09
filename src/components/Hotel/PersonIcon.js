@@ -1,12 +1,16 @@
 import { BsFillPersonFill, BsPerson } from 'react-icons/all';
 import styled from 'styled-components';
 
-export const PersonFillIcon = styled(BsFillPersonFill)`
-  font-size: 27px;
-  color: ${(props) => props.color};
+export default function PersonIcon({ isFilled, color }) {
+  return isFilled ? <PersonFillIcon color={color} /> : <PersonOutlineIcon color={color} />;
+}
+
+const PersonFillIcon = styled(BsFillPersonFill)`
+  font-size: 24px;
+  color: ${({ color }) => color};
 `;
 
-export const PersonIcon = styled(BsPerson)`
+const PersonOutlineIcon = styled(BsPerson)`
   font-size: 24px;
-  color: #000;
+  color: ${({ color }) => color};;
 `;

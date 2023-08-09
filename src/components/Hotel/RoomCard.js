@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { PersonFillIcon, PersonIcon } from './PersonIcon';
+import PersonIcon from './PersonIcon';
 import { useContext } from 'react';
 import BookingContext from '../../contexts/BookingContext';
 
@@ -8,11 +8,9 @@ export default function RoomCard({ name, capacity, availability }) {
   let icons;
 
   if (availability === 0) {
-    icons = fillPeople.map((_, index) => <PersonFillIcon key={index} color="#8c8c8c" />);
+    icons = fillPeople.map((_, index) => <PersonIcon key={index} isFilled={true} color="#8c8c8c" />);
   } else {
-    icons = fillPeople.map((_, index) =>
-      index < availability ? <PersonIcon key={index} /> : <PersonFillIcon key={index} color="#000" />
-    );
+    icons = fillPeople.map((_, index) => <PersonIcon key={index} isFilled={index >= availability} color="#000" />);
   }
 
   return (
