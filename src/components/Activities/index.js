@@ -10,6 +10,7 @@ import useActivities from '../../hooks/api/useActivities';
 
 export default function ActivitiesContainer() {
   const { activities, activitiesError } = useActivities();
+  const [ activity, setActivity ] = useState();
   const [alreadyPaidForEvent, setAlreadyPaidForEvent] = useState(true);
   const [hasVipTicket, setHasVipTicket] = useState(false);
   const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(1); 
@@ -18,8 +19,19 @@ export default function ActivitiesContainer() {
   //  buscar todas atividades na data escolhida
   //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
   useEffect(() => {
-    console.log(activities);
-  }, []);
+    if(activities) {
+      console.log(activities);
+      setActivity(activities);
+    }
+    if(activitiesError) {
+      if(activitiesError.response.data === 'Payment Required') {
+        setAlreadyPaidForEvent(false);
+      }
+      if(activitiesError.response.data === 'unavailable') {
+        setHasVipTicket(true);
+      }
+    }
+  }, [activities, activitiesError]);
   return (
     <>
       {!hasVipTicket && !alreadyPaidForEvent && <StyledMessage>Você precisa ter confirmado pagamento antes<br /> de fazer a escolha de atividades</StyledMessage>}
