@@ -1,19 +1,34 @@
 import styled from 'styled-components';
 import PersonIcon from './PersonIcon';
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import BookingContext from '../../contexts/BookingContext';
 
-export default function RoomCard({ name, capacity, availability }) {
-  const [icons, setIcons] = useState(Array
+export default function RoomCard({ id, name, capacity, availability, setActive, isActive }) {
+  const { roomId, setRoomId } = useContext(BookingContext);
+  const isUnavailable = availability === 0;
+  let icons = Array
     .from({ length: capacity })
     .map((_, index) => (
       { key: index,
-        isFilled: availability === 0 || index >= availability,
-        color: availability === 0 ? '#8c8c8c': '#000' }
-    )));
+        isFilled: isUnavailable || index >= availability,
+        color: isUnavailable ? '#8c8c8c': '#000' }
+    ));
+
+  let bgColor = isUnavailable ? '#E9E9E9' : '#fff';
+  if (isActive) {
+    icons = [...icons.slice(1), { key: icons.length, isFilled: true, color: '#FF4791' }];
+    bgColor = '#FFEED2';
+  }
+
+  function selectRoom() {
+    if (availability !== 0) {
+      setRoomId(id);
+      setActive();
+    }
+  }
 
   return (
-    <Card isFull={availability === 0}>
+    <Card isFull={isUnavailable} bgColor={bgColor} onClick={selectRoom}>
       <p>{name}</p>
       <div>{icons.map(icon => (
         <PersonIcon key={icon.key} isFilled={icon.isFilled} color={icon.color} />
@@ -28,7 +43,7 @@ const Card = styled.div`
   border-radius: 10px;
   border: 1px solid #cecece;
   padding: 0 10px 0 16px;
-  background: ${({ isFull }) => (isFull ? '#E9E9E9' : '#fff')};
+  background: ${({ bgColor }) => bgColor};
 
   display: flex;
   justify-content: space-between;

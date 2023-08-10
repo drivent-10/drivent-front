@@ -9,7 +9,8 @@ export default function RoomCards() {
   const { getRoom } = useRoom();
   const { hotelId } = useContext(BookingContext);
   const [rooms, setRooms] = useState();
-
+  const [activeRoom, setActiveRoom] = useState(null);
+  const setActiveForNthChild = (nth) => () => setActiveRoom(nth);
   useEffect(() => {
     (async() => {
       const room = await getRoom(hotelId);
@@ -21,8 +22,8 @@ export default function RoomCards() {
     <>
       <Subtitle>Ótima pedida! Agora escolha seu quarto:</Subtitle>
       <Rooms>
-        {rooms?.map((r) => (
-          <RoomCard key={r.id} {...r} />
+        {rooms?.map((r, idx) => (
+          <RoomCard key={r.id} {...r} setActive={setActiveForNthChild(idx)} isActive={activeRoom === idx}  />
         ))}
       </Rooms>
     </>
@@ -33,5 +34,5 @@ const Rooms = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px 17px;
-  margin-top: 33px;
+  margin: 33px 0 46px;
 `;
