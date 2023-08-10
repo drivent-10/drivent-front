@@ -12,23 +12,22 @@ import { format } from 'date-fns';
 export default function ActivitiesContainer() {
   const { activities, activitiesError } = useActivities();
   const [ activity, setActivity ] = useState();
+  const [ userActivities, setUserActivities ] = useState();
   const [ listActivity, setListActivity ] = useState(null);
   const [alreadyPaidForEvent, setAlreadyPaidForEvent] = useState(true);
   const [hasVipTicket, setHasVipTicket] = useState(false);
   const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(null); 
   const [selectedDay, setSelectedDay] = useState('');
-  //  1)falta fazer requisição para buscar datas do evento e preencher os botões dinamicamente
-  //  2)depois ao clicar no botão setar o hasAlreadySelectedADate como true e
-  //  buscar todas atividades na data escolhida
   //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
   useEffect(() => {
     if(activities) {
+      console.log(activities);
       const combinedActivities = [
         ...activities.mainAuditorium,
         ...activities.sideAuditorium,
         ...activities.workShop
       ];
-      
+      setUserActivities(activities.userActivities);
       setActivity(combinedActivities);
     }
     if(activitiesError) {
@@ -46,6 +45,12 @@ export default function ActivitiesContainer() {
     const filterActivities = activity.filter((a) => a.name.includes(day));
     setListActivity(filterActivities);
     setHasAlreadySelectedADate(true);
+  }
+
+  function selectActivity(id) {
+    if(userActivities.includes(id)) return;
+    setUserActivities([...userActivities, id]);
+    const body = { activityId: id };
   }
 
   return (
@@ -73,15 +78,16 @@ export default function ActivitiesContainer() {
                     const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
                     const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
                     return (
-                      <EventInfoItem key={activities.id} isSubscribed hours={activities.activityTime}>
+                      <EventInfoItem key={activities.id} isSubscribed={userActivities.includes(activities.id)} hours={activities.activityTime}>
                         <EventDescription>
                           <p>{activities.name}</p>
                           <p>{formattedStartsAt} - {formattedEndsAt}</p>
                         </EventDescription>
-                        <ColumnSeparator isSubscribed />
+                        <ColumnSeparator isSubscribed={userActivities.includes(activities.id)} />
                         <EventCapacity>
-                          <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
-                          <p>{activities.available} vagas</p>
+                          {/*                                                                                                                                                            ta disponivel?              to cadastrada?               se sim, check, se nao, enter  se não ta disponivel xIncon */}
+                          <img style={{ cursor: activities.available > 0 ? 'pointer' : 'not-allowed' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
+                          <p>{activities.available === 0 ? 'Esgotado' : userActivities.includes(activities.id) ? 'Inscrito' : activities.available + ' vagas'}</p>
                         </EventCapacity>
                       </EventInfoItem>
                     );
@@ -96,15 +102,16 @@ export default function ActivitiesContainer() {
                     const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
                     const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
                     return (
-                      <EventInfoItem key={activities.id} isSubscribed hours={activities.activityTime}>
+                      <EventInfoItem key={activities.id} isSubscribed={userActivities.includes(activities.id)} hours={activities.activityTime}>
                         <EventDescription>
                           <p>{activities.name}</p>
                           <p>{formattedStartsAt} - {formattedEndsAt}</p>
                         </EventDescription>
-                        <ColumnSeparator isSubscribed />
+                        <ColumnSeparator isSubscribed={userActivities.includes(activities.id)} />
                         <EventCapacity>
-                          <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
-                          <p>{activities.available} vagas</p>
+                          {/*                                                                                                                                                            ta disponivel?              to cadastrada?               se sim, check, se nao, enter  se não ta disponivel xIncon */}
+                          <img style={{ cursor: activities.available > 0 ? 'pointer' : 'not-allowed' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
+                          <p>{activities.available === 0 ? 'Esgotado' : userActivities.includes(activities.id) ? 'Inscrito' : activities.available + ' vagas'}</p>
                         </EventCapacity>
                       </EventInfoItem>
                     );
@@ -118,16 +125,18 @@ export default function ActivitiesContainer() {
                   if(activities.local === 'Sala de Workshop') {
                     const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
                     const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
+                    activities.available = 0;
                     return (
-                      <EventInfoItem key={activities.id} isSubscribed hours={activities.activityTime}>
+                      <EventInfoItem key={activities.id} isSubscribed={userActivities.includes(activities.id)} hours={activities.activityTime}>
                         <EventDescription>
                           <p>{activities.name}</p>
                           <p>{formattedStartsAt} - {formattedEndsAt}</p>
                         </EventDescription>
-                        <ColumnSeparator isSubscribed />
+                        <ColumnSeparator isSubscribed={userActivities.includes(activities.id)} />
                         <EventCapacity>
-                          <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
-                          <p>{activities.available} vagas</p>
+                          {/*                                                                                                                                                            ta disponivel?              to cadastrada?               se sim, check, se nao, enter  se não ta disponivel xIncon */}
+                          <img style={{ cursor: activities.available > 0 ? 'pointer' : 'not-allowed' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
+                          <p>{activities.available === 0 ? 'Esgotado' : userActivities.includes(activities.id) ? 'Inscrito' : activities.available + ' vagas'}</p>
                         </EventCapacity>
                       </EventInfoItem>
                     );
@@ -153,7 +162,7 @@ const ColumnSeparator = styled.div`
   display: block;
   height: 100%;
   width: 1px;
-  background-color: ${({ isSubscribed }) => isSubscribed ? '#99E8A1' : '#F1F1F1'};
+  background-color: ${({ isSubscribed }) => isSubscribed ? '#99E8A1' : '#D7D7D7'};
 
 `;
 const EventDescription = styled.div`
