@@ -11,4 +11,3 @@ export async function getRoomApi(token, hotelId) {
   }
   return;
 }
-//

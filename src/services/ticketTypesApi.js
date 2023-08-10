@@ -29,4 +29,3 @@ export async function getTicket(token) {
 
   return response.data;
 }
-//
