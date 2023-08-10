@@ -21,6 +21,7 @@ export default function ActivitiesContainer() {
   const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(null); 
   const [selectedDay, setSelectedDay] = useState('');
   const { postActivities, postActivitiesError } = useActivitiesPost();
+  const [ enrollmentIncomplete, setEnrollmentIncomplete ] = useState(false);
   //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
   useEffect(() => {
     if(activities) {
@@ -34,11 +35,15 @@ export default function ActivitiesContainer() {
       setActivity(combinedActivities);
     }
     if(activitiesError) {
+      console.log(activitiesError.response.data);
       if(activitiesError.response.data === 'Payment Required') {
         setAlreadyPaidForEvent(false);
       }
       if(activitiesError.response.data === 'Service Unavailable') {
         setHasVipTicket(true);
+      }
+      if(activitiesError.response.data === 'Not Found') {
+        setEnrollmentIncomplete(true);
       }
     }
   }, [activities, activitiesError]);
@@ -58,7 +63,8 @@ export default function ActivitiesContainer() {
       setUserActivities([...userActivities, id]);
       toast('Inscrição feita com sucesso');
     } catch (err) {
-      toast('Erro ao se inscrever!');
+      console.log(err);
+      toast('Você já está inscrito em outro evento neste horário!');
     }
   }
 
@@ -66,7 +72,8 @@ export default function ActivitiesContainer() {
     <>
       {!hasVipTicket && !alreadyPaidForEvent && <StyledMessage>Você precisa ter confirmado pagamento antes<br /> de fazer a escolha de atividades</StyledMessage>}
       {hasVipTicket && <StyledMessage>Sua modalidade de ingresso não necessita escolher<br /> atividade. Você terá acesso a todas as atividades.</StyledMessage>}
-      {!hasVipTicket && alreadyPaidForEvent && <ContainerActivities>
+      {enrollmentIncomplete && <StyledMessage>Você precisa completar sua inscrição antes<br /> de prosseguir pra escolha das atividades</StyledMessage>}
+      {!hasVipTicket && alreadyPaidForEvent && !enrollmentIncomplete && <ContainerActivities>
         {!hasAlreadySelectedADate && <FirstStyledTypography variant="h6" color="textSecondary">Primeiro, filtre pelo dia do evento:</FirstStyledTypography>}
         <ButtonsContainer>
           <SelectionDayButton onClick={() => selectDay('Friday')} isSelected={selectedDay === 'Friday'} >Sexta, 22/10</SelectionDayButton>
