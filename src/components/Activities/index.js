@@ -7,31 +7,47 @@ import xIcon from '../../assets/images/ant-design_close-circle-outlined.svg';
 import enter from '../../assets/images/pepicons_enter.svg';
 import { useEffect, useState } from 'react';
 import useActivities from '../../hooks/api/useActivities';
+import { format } from 'date-fns';
 
 export default function ActivitiesContainer() {
   const { activities, activitiesError } = useActivities();
   const [ activity, setActivity ] = useState();
+  const [ listActivity, setListActivity ] = useState(null);
   const [alreadyPaidForEvent, setAlreadyPaidForEvent] = useState(true);
   const [hasVipTicket, setHasVipTicket] = useState(false);
-  const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(1); 
+  const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(null); 
+  const [selectedDay, setSelectedDay] = useState('');
   //  1)falta fazer requisição para buscar datas do evento e preencher os botões dinamicamente
   //  2)depois ao clicar no botão setar o hasAlreadySelectedADate como true e
   //  buscar todas atividades na data escolhida
   //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
   useEffect(() => {
     if(activities) {
-      console.log(activities);
-      setActivity(activities);
+      const combinedActivities = [
+        ...activities.mainAuditorium,
+        ...activities.sideAuditorium,
+        ...activities.workShop
+      ];
+      
+      setActivity(combinedActivities);
     }
     if(activitiesError) {
       if(activitiesError.response.data === 'Payment Required') {
         setAlreadyPaidForEvent(false);
       }
-      if(activitiesError.response.data === 'unavailable') {
+      if(activitiesError.response.data === 'Service Unavailable') {
         setHasVipTicket(true);
       }
     }
   }, [activities, activitiesError]);
+
+  function selectDay(day) {
+    setSelectedDay(day);
+    const filterActivities = activity.filter((a) => a.name.includes(day));
+    setListActivity(filterActivities);
+    setHasAlreadySelectedADate(true);
+  }
+
   return (
     <>
       {!hasVipTicket && !alreadyPaidForEvent && <StyledMessage>Você precisa ter confirmado pagamento antes<br /> de fazer a escolha de atividades</StyledMessage>}
@@ -39,9 +55,9 @@ export default function ActivitiesContainer() {
       {!hasVipTicket && alreadyPaidForEvent && <ContainerActivities>
         {!hasAlreadySelectedADate && <FirstStyledTypography variant="h6" color="textSecondary">Primeiro, filtre pelo dia do evento:</FirstStyledTypography>}
         <ButtonsContainer>
-          <SelectionDayButton isSelected >Sexta, 22/10</SelectionDayButton>
-          <SelectionDayButton>Sábado, 23/10</SelectionDayButton>
-          <SelectionDayButton>Domingo, 24/10</SelectionDayButton>
+          <SelectionDayButton onClick={() => selectDay('Friday')} isSelected={selectedDay === 'Friday'} >Sexta, 22/10</SelectionDayButton>
+          <SelectionDayButton onClick={() => selectDay('Saturday')} isSelected={selectedDay === 'Saturday'} >Sábado, 23/10</SelectionDayButton>
+          <SelectionDayButton onClick={() => selectDay('Sunday')} isSelected={selectedDay === 'Sunday'} >Domingo, 24/10</SelectionDayButton>
         </ButtonsContainer>
         {hasAlreadySelectedADate && (<><ScheduleEvent>
           <EventPlaces>
@@ -51,76 +67,73 @@ export default function ActivitiesContainer() {
           </EventPlaces>
           <EventInformations>
             <EventInfoSection>
-              <EventInfoItem isSubscribed hours={1}>
-                <EventDescription>
-                  <p>Minecraft: montando o PC ideal</p>
-                  <p>09:00 - 10:00</p>
-                </EventDescription>
-                <ColumnSeparator isSubscribed />
-                <EventCapacity>
-                  <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
-                  <p>{27} vagas</p>
-                </EventCapacity>
-              </EventInfoItem>
-              <EventInfoItem hours={1}>
-                <EventDescription>
-                  <p>Minecraft: montando o PC ideal</p>
-                  <p>09:00 - 10:00</p>
-                </EventDescription>
-                <ColumnSeparator />
-                <EventCapacity>
-                  <img src={enter} alt="" />
-                  <p>{27} vagas</p>
-                </EventCapacity>
-              </EventInfoItem>
+              {
+                listActivity && listActivity.map((activities) => {
+                  if(activities.local === 'Auditório Principal') {
+                    const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
+                    const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
+                    return (
+                      <EventInfoItem key={activities.id} isSubscribed hours={activities.activityTime}>
+                        <EventDescription>
+                          <p>{activities.name}</p>
+                          <p>{formattedStartsAt} - {formattedEndsAt}</p>
+                        </EventDescription>
+                        <ColumnSeparator isSubscribed />
+                        <EventCapacity>
+                          <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
+                          <p>{activities.available} vagas</p>
+                        </EventCapacity>
+                      </EventInfoItem>
+                    );
+                  }
+                })
+              }
             </EventInfoSection>
             <EventInfoSection>
-              <EventInfoItem hours={2}>
-                <EventDescription>
-                  <p>Minecraft: montando o PC ideal</p>
-                  <p>09:00 - 10:00</p>
-                </EventDescription>
-                <ColumnSeparator />
-                <EventCapacity>
-                  <img src={enter} alt="" />
-                  <p>{27} vagas</p>
-                </EventCapacity>
-              </EventInfoItem>
-              <EventInfoItem hours={1}>
-                <EventDescription>
-                  <p>Minecraft: montando o PC ideal</p>
-                  <p>09:00 - 10:00</p>
-                </EventDescription>
-                <ColumnSeparator />
-                <EventCapacity>
-                  <img src={enter} alt="" />
-                  <p>{27} vagas</p>
-                </EventCapacity>
-              </EventInfoItem>
+              {
+                listActivity && listActivity.map((activities) => {
+                  if(activities.local === 'Auditório Lateral') {
+                    const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
+                    const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
+                    return (
+                      <EventInfoItem key={activities.id} isSubscribed hours={activities.activityTime}>
+                        <EventDescription>
+                          <p>{activities.name}</p>
+                          <p>{formattedStartsAt} - {formattedEndsAt}</p>
+                        </EventDescription>
+                        <ColumnSeparator isSubscribed />
+                        <EventCapacity>
+                          <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
+                          <p>{activities.available} vagas</p>
+                        </EventCapacity>
+                      </EventInfoItem>
+                    );
+                  }
+                })
+              }
             </EventInfoSection>
             <EventInfoSection>
-              <EventInfoItem hours={2}>
-                <EventDescription>
-                  <p>Minecraft: montando o PC ideal</p>
-                  <p>09:00 - 10:00</p>
-                </EventDescription>
-                <ColumnSeparator />
-                <EventCapacity>
-                  <img src={enter} alt="" />
-                  <p>{27} vagas</p>
-                </EventCapacity>
-              </EventInfoItem>
-              <EventInfoItem hours={1}>
-                <EventDescription>
-                  <p>Minecraft: montando o PC ideal</p>
-                  <p>09:00 - 10:00</p>
-                </EventDescription>
-                <ColumnSeparator />
-                <EventCapacity>
-                  <img src={enter} alt="" />
-                  <p>{27} vagas</p>
-                </EventCapacity>
-              </EventInfoItem>
+              {
+                listActivity && listActivity.map((activities) => {
+                  if(activities.local === 'Sala de Workshop') {
+                    const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
+                    const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
+                    return (
+                      <EventInfoItem key={activities.id} isSubscribed hours={activities.activityTime}>
+                        <EventDescription>
+                          <p>{activities.name}</p>
+                          <p>{formattedStartsAt} - {formattedEndsAt}</p>
+                        </EventDescription>
+                        <ColumnSeparator isSubscribed />
+                        <EventCapacity>
+                          <img src={true ? check :/* isFull ? xIcon :*/enter} alt="" />
+                          <p>{activities.available} vagas</p>
+                        </EventCapacity>
+                      </EventInfoItem>
+                    );
+                  }
+                })
+              }
             </EventInfoSection>
 
           </EventInformations>
