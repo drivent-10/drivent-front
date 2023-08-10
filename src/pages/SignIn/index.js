@@ -13,6 +13,7 @@ import EventInfoContext from '../../contexts/EventInfoContext';
 import UserContext from '../../contexts/UserContext';
 
 import useSignIn from '../../hooks/api/useSignIn';
+import SignInWithGitHubButton from '../../components/Auth/SignInWithGitHubButton';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -45,7 +46,9 @@ export default function SignIn() {
         <Title>{eventInfo.title}</Title>
       </Row>
       <Row>
-        <Label>Entrar</Label>
+        {/* <Label>Entrar</Label> */}
+        <SignInWithGitHubButton/>
+        <h1>ou</h1>
         <form onSubmit={submit}>
           <Input label="E-mail" type="text" fullWidth value={email} onChange={e => setEmail(e.target.value)} />
           <Input label="Senha" type="password" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
