@@ -8,6 +8,8 @@ import enter from '../../assets/images/pepicons_enter.svg';
 import { useEffect, useState } from 'react';
 import useActivities from '../../hooks/api/useActivities';
 import { format } from 'date-fns';
+import useActivitiesPost from '../../hooks/api/useActivitiesPost';
+import { toast } from 'react-toastify';
 
 export default function ActivitiesContainer() {
   const { activities, activitiesError } = useActivities();
@@ -18,6 +20,7 @@ export default function ActivitiesContainer() {
   const [hasVipTicket, setHasVipTicket] = useState(false);
   const [hasAlreadySelectedADate, setHasAlreadySelectedADate] = useState(null); 
   const [selectedDay, setSelectedDay] = useState('');
+  const { postActivities, postActivitiesError } = useActivitiesPost();
   //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
   useEffect(() => {
     if(activities) {
@@ -47,10 +50,16 @@ export default function ActivitiesContainer() {
     setHasAlreadySelectedADate(true);
   }
 
-  function selectActivity(id) {
+  async function selectActivity(id) {
     if(userActivities.includes(id)) return;
-    setUserActivities([...userActivities, id]);
     const body = { activityId: id };
+    try {
+      await postActivities(body);
+      setUserActivities([...userActivities, id]);
+      toast('Inscrição feita com sucesso');
+    } catch (err) {
+      toast('Erro ao se inscrever!');
+    }
   }
 
   return (
@@ -84,9 +93,9 @@ export default function ActivitiesContainer() {
                           <p>{formattedStartsAt} - {formattedEndsAt}</p>
                         </EventDescription>
                         <ColumnSeparator isSubscribed={userActivities.includes(activities.id)} />
-                        <EventCapacity>
+                        <EventCapacity isFull={activities.available === 0}>
                           {/*                                                                                                                                                            ta disponivel?              to cadastrada?               se sim, check, se nao, enter  se não ta disponivel xIncon */}
-                          <img style={{ cursor: activities.available > 0 ? 'pointer' : 'not-allowed' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
+                          <img style={{ cursor: activities.available === 0 || userActivities.includes(activities.id)? 'not-allowed' : 'pointer' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
                           <p>{activities.available === 0 ? 'Esgotado' : userActivities.includes(activities.id) ? 'Inscrito' : activities.available + ' vagas'}</p>
                         </EventCapacity>
                       </EventInfoItem>
@@ -108,9 +117,9 @@ export default function ActivitiesContainer() {
                           <p>{formattedStartsAt} - {formattedEndsAt}</p>
                         </EventDescription>
                         <ColumnSeparator isSubscribed={userActivities.includes(activities.id)} />
-                        <EventCapacity>
+                        <EventCapacity isFull={activities.available === 0}>
                           {/*                                                                                                                                                            ta disponivel?              to cadastrada?               se sim, check, se nao, enter  se não ta disponivel xIncon */}
-                          <img style={{ cursor: activities.available > 0 ? 'pointer' : 'not-allowed' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
+                          <img style={{ cursor: activities.available === 0 || userActivities.includes(activities.id)? 'not-allowed' : 'pointer' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
                           <p>{activities.available === 0 ? 'Esgotado' : userActivities.includes(activities.id) ? 'Inscrito' : activities.available + ' vagas'}</p>
                         </EventCapacity>
                       </EventInfoItem>
@@ -125,7 +134,6 @@ export default function ActivitiesContainer() {
                   if(activities.local === 'Sala de Workshop') {
                     const formattedStartsAt = format(new Date(activities.startsAt), 'HH:mm');
                     const formattedEndsAt = format(new Date(activities.endsAt), 'HH:mm');
-                    activities.available = 0;
                     return (
                       <EventInfoItem key={activities.id} isSubscribed={userActivities.includes(activities.id)} hours={activities.activityTime}>
                         <EventDescription>
@@ -133,9 +141,9 @@ export default function ActivitiesContainer() {
                           <p>{formattedStartsAt} - {formattedEndsAt}</p>
                         </EventDescription>
                         <ColumnSeparator isSubscribed={userActivities.includes(activities.id)} />
-                        <EventCapacity>
+                        <EventCapacity isFull={activities.available === 0}>
                           {/*                                                                                                                                                            ta disponivel?              to cadastrada?               se sim, check, se nao, enter  se não ta disponivel xIncon */}
-                          <img style={{ cursor: activities.available > 0 ? 'pointer' : 'not-allowed' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
+                          <img style={{ cursor: activities.available === 0 || userActivities.includes(activities.id)? 'not-allowed' : 'pointer' }} onClick={() => activities.available > 0 && selectActivity(activities.id)} src={activities.available > 0 ? userActivities.includes(activities.id) ? check : enter : xIcon} alt="" />
                           <p>{activities.available === 0 ? 'Esgotado' : userActivities.includes(activities.id) ? 'Inscrito' : activities.available + ' vagas'}</p>
                         </EventCapacity>
                       </EventInfoItem>
@@ -177,15 +185,16 @@ const EventDescription = styled.div`
   }
   `;
 const EventCapacity = styled.div`
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-color:#078632;
-line-height:10.55px;
-font-size:9px;
-width: 20%;
-padding-left:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  color: ${({ isFull }) => isFull ? '#CC6666' : '#078632'};
+  line-height:10.55px;
+  font-size:9px;
+  width: 20%;
+  padding-left:10px;
+  text-align: center;
 `;
 const EventInfoItem = styled.div`
 display:flex;
