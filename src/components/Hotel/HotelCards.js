@@ -2,10 +2,12 @@ import HotelCard from './HotelCard';
 import styled from 'styled-components';
 import { Subtitle } from '../Subtitle';
 import useHotel from '../../hooks/api/useHotel';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { useState } from 'react';
 import useRoom from '../../hooks/api/useRoom';
 import Notice from '../Notice';
+import BookingCard from './BookingCard';
+import BookingContext from '../../contexts/BookingContext';
 
 export default function HotelCards() {
   const { hotel, hotelError } = useHotel();

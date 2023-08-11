@@ -4,8 +4,14 @@ import { Card } from './Card';
 
 export default function HotelCard({ id, name, accommodationType, availability, image }) {
   const { hotelId, setHotelId } = useContext(BookingContext);
+  const { bookingData, setBookingData } = useContext(BookingContext);
+
+  function selectHotel() {
+    setHotelId(id);
+    setBookingData({ ...bookingData, hotelName: name, hotelImage: image });
+  }
   return (
-    <Card isActive={id === hotelId} onClick={() => setHotelId(id)}>
+    <Card isActive={id === hotelId} onClick={selectHotel}>
       <img src={image} alt={name} />
       <h3>{name}</h3>
       <div>

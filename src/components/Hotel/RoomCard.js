@@ -4,7 +4,8 @@ import { useContext } from 'react';
 import BookingContext from '../../contexts/BookingContext';
 
 export default function RoomCard({ id, name, capacity, availability, setActive, isActive }) {
-  const { roomId, setRoomId } = useContext(BookingContext);
+  const { setRoomId } = useContext(BookingContext);
+  const { bookingData, setBookingData } = useContext(BookingContext);
   const isUnavailable = availability === 0;
   let icons = Array
     .from({ length: capacity })
@@ -24,6 +25,25 @@ export default function RoomCard({ id, name, capacity, availability, setActive, 
     if (availability !== 0) {
       setRoomId(id);
       setActive();
+      let roomSize;
+      switch (capacity) {
+      case 1: roomSize = 'Single';
+        break;
+      case 2: roomSize = 'Double';
+        break;
+      case 3: roomSize = 'Triple';
+        break;
+      default: roomSize = 'No room size';
+      }
+
+      let roomMessage;
+      if (capacity === availability) {
+        roomMessage = 'Somente você';
+      } else {
+        roomMessage = `Você e mais ${capacity - availability}`
+      }
+
+      setBookingData({ ...bookingData, roomNumber: name, roomSize, roomMessage });
     }
   }
 

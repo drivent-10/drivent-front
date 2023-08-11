@@ -4,30 +4,20 @@ import { Card } from './Card';
 import useBooking from '../../hooks/api/useBooking';
 
 export default function BookingCard() {
-  const [bookingData, setBookingData] = useState(null);
-  const { booking } = useBooking();
-
-  useEffect(() => {
-    (async() => {
-      if (booking) {
-        setBookingData(booking);
-        console.log(booking);
-      }
-    })();
-  }, [booking]);
-
+  const { bookingData } = useContext(BookingContext);
+  const { hotelName, hotelImage, roomNumber, roomSize, roomMessage } = bookingData;
   return (
     <Card isActive={true}>
-      {/* <img src={image} alt={name} />
-      <h3>{name}</h3>
+      <img src={hotelImage} alt={hotelName} />
+      <h3>{hotelName}</h3>
       <div>
         <h4>Quarto reservado</h4>
-        <p>{accommodationType}</p>
+        <p>{`${roomNumber} (${roomSize})`}</p>
       </div>
       <div>
         <h4>Pessoas no seu quarto</h4>
-        <p>{availability}</p>
-      </div>*/}
+        <p>{roomMessage}</p>
+      </div>
     </Card>
   );
 }
