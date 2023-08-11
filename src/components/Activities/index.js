@@ -22,10 +22,9 @@ export default function ActivitiesContainer() {
   const [selectedDay, setSelectedDay] = useState('');
   const { postActivities, postActivitiesError } = useActivitiesPost();
   const [ enrollmentIncomplete, setEnrollmentIncomplete ] = useState(false);
-  //  3)Também buscar junto ao clique anterior se o usuário está inscrito ou não nas atividades.
+  
   useEffect(() => {
     if(activities) {
-      console.log(activities);
       const combinedActivities = [
         ...activities.mainAuditorium,
         ...activities.sideAuditorium,
@@ -35,7 +34,6 @@ export default function ActivitiesContainer() {
       setActivity(combinedActivities);
     }
     if(activitiesError) {
-      console.log(activitiesError.response.data);
       if(activitiesError.response.data === 'Payment Required') {
         setAlreadyPaidForEvent(false);
       }
@@ -63,8 +61,11 @@ export default function ActivitiesContainer() {
       setUserActivities([...userActivities, id]);
       toast('Inscrição feita com sucesso');
     } catch (err) {
-      console.log(err);
-      toast('Você já está inscrito em outro evento neste horário!');
+      if(err.response.data.message === 'User already has an activity scheduled at this time') {
+        toast('Você já está inscrito em outro evento neste horário!');
+      }else{
+        toast('Um erro desconhecido ocorreu! Por favor, tente novamente!');
+      }
     }
   }
 
