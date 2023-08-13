@@ -20,11 +20,9 @@ export default function HotelCards() {
     if (hotelError) {
       if (hotelError.response.data === 'Not Found') {
         setMessage('Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso');
-      }
-      else if (hotelError.response.data.type === 'unpaid') {
+      } else if (hotelError.response.data.type === 'unpaid') {
         setMessage('Você precisa ter confirmado pagamento antes de fazer a escolha de hospedagem');
-      }
-      else if (hotelError.response.data.type === 'unavailable') {
+      } else if (hotelError.response.data.type === 'unavailable') {
         setMessage('Sua modalidade de ingresso não inclui hospedagem, prossiga para a escolha de atividades');
       }
     }

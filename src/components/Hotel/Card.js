@@ -8,8 +8,8 @@ export const Card = styled.div`
 
   padding: 16px 14px;
   &:hover {
-    cursor: pointer;
-    box-shadow: 0 4px 10px 5px rgba(0, 0, 0, 0.2);
+    cursor: ${({ hover }) => hover ? 'pointer' : 'normal'};
+    box-shadow: ${({ hover }) => hover ? '0 4px 10px 5px rgba(0, 0, 0, 0.2)' : '0px 0px'};
   }
 
   img {
