@@ -1,4 +1,4 @@
-import { BsFillPersonFill, BsPerson } from 'react-icons/all';
+import { BsFillPersonFill, BsPerson } from 'react-icons/bs';
 import styled from 'styled-components';
 
 export const PersonFillIcon = styled(BsFillPersonFill)`
